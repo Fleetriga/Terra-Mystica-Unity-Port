@@ -1,0 +1,63 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Income_Map{
+
+    SingleIncome[] building_income_map;
+    int current_index;
+
+
+    public Income_Map(int no_buildings)
+    {
+        building_income_map = new SingleIncome[no_buildings];
+        current_index = 0;
+    }
+
+    public void AddIncome(SingleIncome si)
+    {
+        building_income_map[current_index] = si;
+        current_index++;
+    }
+
+    int Get_Next_Index()
+    {
+        int i = 0;
+        foreach (SingleIncome si in building_income_map){
+            if (si != null)
+            {
+                return i;
+            }
+            i++;
+        }
+        return building_income_map.Length;
+    }
+
+    public SingleIncome GetIncome(int i)
+    {
+        return building_income_map[i];
+    }
+
+    public int[] Get_Total_Income(int no_built)
+    {
+        int[] incomes = new int[4];
+        for (int i = 0; i < no_built; i++)
+        {
+            incomes[0] += building_income_map[i].Gold;
+            incomes[1] += building_income_map[i].Worker;
+            incomes[2] += building_income_map[i].Priest;
+            incomes[3] += building_income_map[i].Magic;
+        }
+
+        return incomes;
+    }
+
+    public SingleIncome Get_Total_Income_SI(int no_built)
+    {
+        int[] temp = Get_Total_Income(no_built+1);
+        return new SingleIncome(temp[0], temp[1], temp[2], temp[3]);
+
+    }
+
+
+}
