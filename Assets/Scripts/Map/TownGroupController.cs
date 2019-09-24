@@ -12,19 +12,22 @@ public class TownGroupController {
         groups = new List<TownGroup>();
     }
 
-    public bool JoinTownGroup(Tile tile_, List<Tile> tiles, Player player)
+    /* Take the tile that was built upon and all surrounding tiles with townGroups from the same player.
+    // Take also the type of building being built, sadly the tile is joined to a group before the building is actually built so this is requried
+    */
+    public bool JoinTownGroup(Tile builtUpon, Building.Building_Type newBuildingType, List<Tile> neighbours, Player player)
     {
-        List<TownGroup> surroundingGroups = GetSurroundingGroups(tiles, player);
+        List<TownGroup> surroundingGroups = GetSurroundingGroups(neighbours, player);
 
         //if (surroundingGroups.Count < 1 && tile_.GetTownGroup() == null) { tile_.GetTownGroup().AddTownProgress(Building.GetBuildingValue);} //If theres no surrounding groups but it is already part of a group (i.e. upgrading an isolated building)
-        if (surroundingGroups.Count < 1 && tile_.GetTownGroup() == null) { AddToTownGroup(tile_, CreateTownGroup(tile_, player)); } 
-        else if (surroundingGroups.Count == 1) { AddToTownGroup(tile_, surroundingGroups[0]); }
-        else if (surroundingGroups.Count > 1) { AddToTownGroup(tile_, MergeTownGroups(surroundingGroups, CreateTownGroup(tile_, player))); } //Merge then add the connecting one
+        if (surroundingGroups.Count < 1 && builtUpon.GetTownGroup() == null) { AddToTownGroup(builtUpon, CreateTownGroup(builtUpon, player)); } //If it's on it's own, just create a new group for it
+        else if (surroundingGroups.Count == 1) { AddToTownGroup(builtUpon, surroundingGroups[0]); } //If it's surrounded by only a single TownGroup then join the tile to that one
+        else if (surroundingGroups.Count > 1) { AddToTownGroup(builtUpon, MergeTownGroups(surroundingGroups, CreateTownGroup(builtUpon, player))); } //If surrounded by 2 or more then all townGroups need to be merged into one.
 
         //Now that it's been added to the group, add it's points on
-        tile_.GetTownGroup().AddTownProgress(Building.GetBuildingValue(tile_.GetBuildingType()));
+        builtUpon.GetTownGroup().AddTownProgress(Building.GetBuildingValue(newBuildingType));
 
-        return CheckNewTown(tile_.GetTownGroup()); //Return true or false depending on whether a new town is built or not
+        return CheckNewTown(builtUpon.GetTownGroup()); //Return true or false depending on whether a new town is built or not
     }
 
     public void AddToTownGroup(Tile t_, TownGroup tg_)

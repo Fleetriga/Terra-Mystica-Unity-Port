@@ -20,6 +20,7 @@ public class AbilityManager : MonoBehaviour {
     {
         T ua = unused_abilities.GetComponentInChildren<T>(); //Gets the ability we're looking for and saves it for us
         ua.transform.SetParent(personal_abilities.transform); //Set parent
+        ua.GetComponent<RectTransform>().localScale = new Vector3(1,1,1); //In case ability tab is closed at the time
 
         //Recalculate background and then position the boys
         back.PositionAbilities(personal_abilities, world_abilities);
@@ -42,11 +43,11 @@ public class AbilityManager : MonoBehaviour {
         //Adding an ability test
         if (Input.GetKeyDown(KeyCode.Y))
         {
-            AddAbility<Ability_AddToCult>();
+            AddAbility<AbilityAddToCult>();
         }
         if (Input.GetKeyDown(KeyCode.U))
         {
-            RemoveAbility<Ability_AddToCult>();
+            RemoveAbility<AbilityAddToCult>();
         }
     }
 

@@ -16,7 +16,7 @@ public class CultIncome {
         levels[3] = income_air;
     }
 
-    public int[] Get_Income()
+    public int[] GetIncome()
     {
         return levels;
     }

@@ -1,108 +1,131 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Mirror;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class PlayerNetworked : NetworkBehaviour {
 
-    public GameObject player_game_object;
+    public GameObject playerGameObject;
     public GameObject dropDown;
-    public Turn_Controller turn_synced;
 
+    //Turn Controlling. Only set on host
+    public int CurrentPlayer;
+
+    [SyncVar]
     public int Player_ID;
-
+    [SyncVar]
+    public bool isHost;
+    [SyncVar]
     public Faction.Faction_Type p_faction;
 
-    //dirty bit
-    bool gameStarted = true;
-
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start() {
         DontDestroyOnLoad(gameObject);
 
-        //If youre the server, register the player
-        if (isServer)
+        if (isHost) //New players identify HostPlayer
         {
-            //Register the player to the server
-            Cmd_Register_Player();
-            Cmd_Spawn_TurnSync();
+            name = "HostPlayer";
         }
         if (!isLocalPlayer)
         {
             return;
         }
+        if (isServer) // player object becomes TurnController for everyone;
+        {
+            Cmd_SetHost();
+        }
 
-        //Instantiate it, then send it to the server to get spawned to all players
-        Cmd_spawn_Dropdown();
-	}
+        //Spawn the dropdown and turn controller
+        Cmd_SpawnDropdown();
+    }
+
+    void Cmd_AddPlayerStatus()
+    {
+        Rpc_AddPlayerStatus();
+    }
+    void Rpc_AddPlayerStatus()
+    {
+        gameObject.AddComponent<PlayerStatus>();
+    }
 
     void Update()
     {
-        if (!gameStarted)
+        //If you are the host, scan other players and yourself for turn changes
+        if (isHost && hasAuthority && GetComponent<TurnController>() != null)
         {
-            //Cmd_Player_Loaded();
-            GameObject.Find("Controller").GetComponent<Game_Loop_Controller>().Start_Game();
-            gameStarted = true;
+            if (GetComponent<TurnController>().ScanForTurnChanges()) { Cmd_SetCurrentPlayer(GetComponent<TurnController>().CurrentPlayersID()); }
         }
+    }
+
+    //Host methods
+    [Command]
+    void Cmd_SetCurrentPlayer(int newCurrentPlayersId)
+    {
+        CurrentPlayer = newCurrentPlayersId;
+        Rpc_SetCurrentPlayer(newCurrentPlayersId);
+    }
+    [ClientRpc]
+    void Rpc_SetCurrentPlayer(int newCurrentPlayersId)
+    {
+        CurrentPlayer = newCurrentPlayersId;
+    }
+    [Command]
+    void Cmd_SetHost()
+    {
+        name = "HostPlayer";
+        isHost = true;
     }
 
     void OnLevelWasLoaded()
     {
-        if (isLocalPlayer && SceneManager.GetActiveScene().buildIndex == 1)
+        if (hasAuthority)
         {
-            GameObject go = Instantiate(player_game_object);
-            go.GetComponent<Player>().SetUp(p_faction, Player_ID);
-            gameStarted = false;
+            GameObject go = Instantiate(playerGameObject);
+            go.GetComponent<Player>().SetUp(p_faction, Player_ID, gameObject);
+            GameObject.Find("Controller").GetComponent<GameController>().Start_Game();
         }
     }
 
     public string Set_Faction(Faction.Faction_Type i)
     {
-        Cmd_Set_Faction(i);
+        Cmd_SetFaction(i);
         return Faction.GetFaction(i);
     }
-
     [Command]
-    public void Cmd_Set_Faction(Faction.Faction_Type i)
+    public void Cmd_SetFaction(Faction.Faction_Type i)
     {
         p_faction = i;
     }
 
     [Command]
-    void Cmd_spawn_Dropdown()
+    void Cmd_SpawnDropdown()
     {
         GameObject go = Instantiate(dropDown);
         NetworkServer.SpawnWithClientAuthority(go, connectionToClient);
         go.GetComponent<DropDownMenu>().Cmd_SetOwner(gameObject);
-        Rpc_Move_DropDown(-100, go);
+        Rpc_SetIDMoveDropDown(-100, go);
     }
-
     [ClientRpc]
-    void Rpc_Move_DropDown(int yDifference, GameObject go)
+    void Rpc_SetIDMoveDropDown(int yDifference, GameObject go)
     {
-        Player_ID = GameObject.FindGameObjectsWithTag("Player_Networked_Object").Length-1;
+        Player_ID = GameObject.FindGameObjectsWithTag("Player_Networked_Object").Length - 1;
         go.transform.GetChild(0).GetComponent<RectTransform>().localPosition = new Vector2(0, yDifference * Player_ID);
     }
 
-    [Command]
-    public void Cmd_Register_Player()
+    public void StartGamePreparations()
     {
-        turn_synced.Add_Player(this);
+        if (!hasAuthority || !isHost) { return; } //If the player is not the host
+        gameObject.AddComponent<TurnController>();
+        GetComponent<TurnController>().SetUp(NetworkServer.connections.Count);
+        Rpc_ChangeScene("GameScene");
     }
-
-    [Command]
-    void Cmd_Player_Loaded()
-    {
-        Rpc_Player_Loaded();
-    }
-
     [ClientRpc]
-    void Rpc_Player_Loaded()
+    void Rpc_ChangeScene(string scenename)
     {
-        GameObject.Find("GameStarter").GetComponent<Game_Starter>().Player_Loaded();
+        SceneManager.LoadSceneAsync(scenename);
     }
 
-
+    public Material GetFactionMaterial()
+    {
+        return Faction.GetFactionMaterial(p_faction);
+    }
 }

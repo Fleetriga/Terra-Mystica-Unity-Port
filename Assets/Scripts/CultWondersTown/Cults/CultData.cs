@@ -32,7 +32,7 @@ public class CultData {
         for (int i = 0; i < 4; i++)
         {
             temp_value = levels[i];
-            levels[i] += income.Get_Income()[i];
+            levels[i] += income.GetIncome()[i];
             Check_magic_owed(temp_value, levels[i]); //if the cult level passes a certain point then the player recieves magic;
         }
 
@@ -79,7 +79,7 @@ public class CultData {
         }
     }
 
-    public int[] Get_Levels()
+    public int[] GetLevels()
     {
         return levels;
     }

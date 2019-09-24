@@ -7,21 +7,24 @@ using UnityEngine.UI;
 public class Networked_UI_Updater : MonoBehaviour
 {
     //panels
-    public GameObject wonderTilePanel;
+    public GameObject favourTilePanel;
     public GameObject townTilePanel;
-    public GameObject round_bonus_panel;
+    public GameObject roundBonusFrame;
+
+    //Button holders
+    public GameObject favourButtons;
+    public GameObject townButtons;
+    public GameObject roundBonusButtons;
 
     //Panels PROPERTIES
-    public GameObject WonderTilePanel { get { return wonderTilePanel; }}
+    public GameObject FavourTilePanel { get { return favourTilePanel; }}
     public GameObject TownTilePanel { get { return townTilePanel; }}
-    public GameObject Round_Bonus_Panel { get { return round_bonus_panel; }}
-
 
     //Does the necessary set up for the start of the game
     public void SetUpUI()
     {
-        PanelInteractivityEnDisable(WonderTilePanel, false);
-        PanelInteractivityEnDisable(TownTilePanel, false);
+        PanelInteractivityEnDisable(favourButtons, false);
+        PanelInteractivityEnDisable(townButtons, false);
     }
 
     //Disables/Enables interactivity in the child button components
@@ -40,27 +43,18 @@ public class Networked_UI_Updater : MonoBehaviour
         button.interactable = endisable;
     }
 
-    public void Show_Hide_Round_Bonuses(bool show_or)
+    public void DisEnableRoundBonuses(bool activate)
     {
-        round_bonus_panel.SetActive(show_or);
+        roundBonusFrame.SetActive(activate);
     }
 
-    internal void UpdateWonderTile(int track, int tier)
+    public void DisEnableTownTiles()
     {
+        townTilePanel.GetComponent<OpenCloseOnClick>().OnClick();
     }
 
-    public void UpdateTownTile()
+    public void DisEnableFavourTiles()
     {
-
-    }
-
-    internal GameObject GetTownTilePanel()
-    {
-        throw new NotImplementedException();
-    }
-
-    internal void Show_Hide_RoundMain_Panels(bool v)
-    {
-        throw new NotImplementedException();
+        favourTilePanel.GetComponent<OpenCloseOnClick>().OnClick();
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Building {
 
-    public enum Building_Type { Dwelling, Trading_Post, Fortress, Temple, Sanctuary, NOTHING };
+    public enum Building_Type { Dwelling, Trading_Post, Stronghold, Temple, Sanctuary, NOTHING };
     Building_Type b_type;
     bool hasBuilt;
 
@@ -19,11 +19,10 @@ public class Building {
         hasBuilt = false;
     }
 
-    public bool Upgrade(Building_Type to)
+    public bool IsUpgrade(Building_Type to)
     {
         if (((int)to - (int)b_type == 1) || ((int)b_type == 1 && (int)to == 3) || ((int)b_type == 5 && (int)to == 0)) //If upgrade is next in path or upgrading from TP to sanctuary or upgrading to a dwelling
         {
-            Build(to);
             return true;
         }
         return false;
@@ -63,7 +62,7 @@ public class Building {
                 return 1;
             case Building_Type.Trading_Post:
                 return 1;
-            case Building_Type.Fortress:
+            case Building_Type.Stronghold:
                 return 1;
             case Building_Type.Sanctuary:
                 return 1;

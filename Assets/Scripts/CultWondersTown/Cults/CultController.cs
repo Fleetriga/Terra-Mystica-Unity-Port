@@ -20,14 +20,14 @@ public class CultController
         return new int[] { track, tier };
     }
 
-    public int Add_To_Track_Level(CultIncome income, Player pl)
+    public int AddToTrackLevel(CultIncome income, Player pl)
     {
-        if (pl.Add_To_Track_Level(income, max))
+        if (pl.AddToTrackLevel(income, max))
         {
             //Rework the max
-            for (int i = 0; i < pl.Get_CultData().Get_Levels().Length; i++)
+            for (int i = 0; i < pl.GetCultData().GetLevels().Length; i++)
             {
-                if (pl.Get_CultData().Get_Levels()[i] == 10) { max[i] = 9;}
+                if (pl.GetCultData().GetLevels()[i] == 10) { max[i] = 9;}
             }
         }
         return pl.Get_Owed_CultMagic();

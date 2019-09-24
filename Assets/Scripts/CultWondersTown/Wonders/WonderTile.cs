@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WonderTile {
+public class FavourBonus {
 
     //income
     SingleIncome income { get; set;}
@@ -12,7 +12,7 @@ public class WonderTile {
     public int Points { get; set; }
 
     /**For favour tiles */
-    public WonderTile(SingleIncome i_, PointBonus pb_, CultIncome ci_)
+    public FavourBonus(SingleIncome i_, PointBonus pb_, CultIncome ci_)
     {
         income = i_;
         pointBonus = pb_;
@@ -20,7 +20,7 @@ public class WonderTile {
     }
 
     /**For town tiles */
-    public WonderTile(SingleIncome i_, int points_, CultIncome ci_)
+    public FavourBonus(SingleIncome i_, int points_, CultIncome ci_)
     {
         income = i_;
         Points = points_;

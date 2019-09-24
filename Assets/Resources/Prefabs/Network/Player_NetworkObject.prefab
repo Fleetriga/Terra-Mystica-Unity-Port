@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 3479789776446344860}
   - component: {fileID: 3729363982219088168}
   - component: {fileID: 4696007660654311864}
+  - component: {fileID: 2678737269842740147}
+  - component: {fileID: 717155727272584582}
   m_Layer: 0
   m_Name: Player_NetworkObject
   m_TagString: Player_Networked_Object
@@ -47,7 +49,7 @@ MonoBehaviour:
   serverOnly: 0
   localPlayerAuthority: 1
   m_AssetId: 
-  m_SceneId: 3574419590
+  m_SceneId: 0
 --- !u!114 &4696007660654311864
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61,11 +63,46 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   syncInterval: 0.1
-  player_game_object: {fileID: 1466465993357930, guid: f049af37d4c5aa3449b98a5d9fd48331,
+  playerGameObject: {fileID: 1466465993357930, guid: f049af37d4c5aa3449b98a5d9fd48331,
     type: 3}
   dropDown: {fileID: 9211180173593796409, guid: dc8f7be8733289f489e77b5b440599bd,
     type: 3}
-  turn_synced: {fileID: 4867763872687019138, guid: 76610df17598c3d449c634dfdea58e10,
-    type: 3}
+  CurrentPlayer: 0
   Player_ID: 0
+  isHost: 0
   p_faction: 0
+--- !u!114 &2678737269842740147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3479789776446344861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d92a731baa53a14e99ab3c38f8b4d13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncInterval: 0.1
+  CurrentPlayerStatus: 0
+--- !u!114 &717155727272584582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3479789776446344861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 591cbae0eb8e17b41bfad067f4aa8a4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncInterval: 0.1
+  CoordinateX: 0
+  CoordinateY: 0
+  Built: 5
+  Terraformed: 7
+  FoundedCityBonus: 5
+  PickedRoundBonus: 9
+  CastedSpell: 9
+  Change: 7

@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class TownGroup {
     bool isTown;
-    int progress_points;
+    int progressPoints;
     int groupID;
     Player owner;
-    List<Tile> build_coordinates;
+    List<Tile> buildCoordinates; //used for iterating over all tiles within the group
 
     //For newly created groups
     public TownGroup(int ID_, Player playerID_)
@@ -15,24 +15,24 @@ public class TownGroup {
         isTown = false;
         groupID = ID_;
         owner = playerID_;
-        build_coordinates = new List<Tile>();
+        buildCoordinates = new List<Tile>();
     }
 
     //For groups created from merged groups
     public TownGroup(bool isTown_, int progress_points_, int groupID_, Player playerID_)
     {
         isTown = isTown_;
-        progress_points = progress_points_;
+        progressPoints = progress_points_;
         groupID = groupID_;
         owner = playerID_;
-        build_coordinates = new List<Tile>();
+        buildCoordinates = new List<Tile>();
     }
 
     //returns true if a town is made
     public bool AddTownProgress(int progress)
     {
-        progress_points += progress;
-        if (progress_points >= owner.PointsForTown)
+        progressPoints += progress;
+        if (progressPoints >= owner.PointsForTown)
         {
             return true;
         }return false;
@@ -53,7 +53,7 @@ public class TownGroup {
         }
         else
         {
-            if (progress_points >= points_for_town) { return true; }
+            if (progressPoints >= points_for_town) { return true; }
         }
 
         return false;
@@ -66,17 +66,17 @@ public class TownGroup {
 
     public void AddTile(Tile coordinate_)
     {
-        build_coordinates.Add(coordinate_);
+        buildCoordinates.Add(coordinate_);
     }
 
     public List<Tile> GetCoordinates()
     {
-        return build_coordinates;
+        return buildCoordinates;
     }
 
     public int GetProgress()
     {
-        return progress_points;
+        return progressPoints;
     }
 
     public int GetOwner() //Gives owner by it's playerID

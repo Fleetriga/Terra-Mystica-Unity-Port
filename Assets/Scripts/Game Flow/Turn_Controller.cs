@@ -1,112 +1,77 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using Mirror;
-using UnityEngine.SceneManagement;
 
-public class Turn_Controller : NetworkBehaviour {
+public class TurnController : MonoBehaviour {
 
     public List<int> next_round;
-    public List<int> this_round;
+    public List<int> thisRound;
     int current_player;
 
-    List<PlayerNetworked> players;
-    public int player_count;
+    GameObject[] playersStatuses;
 
-    private void Awake()
+    public void SetUp(int noPlayers)
     {
-        DontDestroyOnLoad(this);
-        players = new List<PlayerNetworked>();
-    }
-
-
-    void OnLevelWasLoaded()
-    {
-        if (SceneManager.GetActiveScene().buildIndex == 1)
+        thisRound = new List<int>();
+        for (int i = 0; i < noPlayers; i++)
         {
-            Set_Up(player_count);
-        }
-    }
-
-    public void Set_Up(int no_players)
-    {
-        this_round = new List<int>();
-        for (int i = 0; i < no_players; i++)
-        {
-            this_round.Add(i);
+            thisRound.Add(i);
         }
         next_round = new List<int>();
         current_player = 0;
     }
 
-    [Command]
-    public void Cmd_Next_Player()
+    public void NextPlayer()
     {
-        Rpc_Next_Player();
+        current_player = (current_player + 1) % thisRound.Count;
     }
-    [Command]
-    public void Cmd_Retire_Player()
+    public void RetirePlayer()
     {
-        Rpc_Retire_Player();
+        next_round.Add(thisRound[current_player]); //adds to the end of the next round order
+        thisRound.Remove(thisRound[current_player]);
+
+        if (thisRound.Count == 0) { NextPhase(); } //Go to next phase when no one is left
     }
-    [Command]
-    public void Cmd_Next_Phase()
+    public void NextPhase()
     {
-        Rpc_Next_Phase();
-    }
-    [ClientRpc]
-    void Rpc_Next_Player()
-    {
-        if (isServer)
-        {
-            return;
-        }
-        current_player = (current_player + 1) % this_round.Count;
-    }
-    [ClientRpc]
-    void Rpc_Retire_Player()
-    {
-        if (isServer)
-        {
-            return;
-        }
-        next_round.Add(this_round[current_player]); //adds to the end of the next round order
-        this_round.Remove(this_round[current_player]);
-    }
-    [ClientRpc]
-    void Rpc_Next_Phase()
-    {
-        if (isServer)
-        {
-            return;
-        }
-        this_round = next_round;
+        thisRound = next_round;
         next_round = new List<int>();
+
+        //Set Current player to the first player in this new phase
+        current_player = 0;
     }
 
-    public int Current_Player()
+    public int CurrentPlayersID()
     {
-        return this_round[current_player];
+        return thisRound[current_player];
     }
 
     //Returns true when no players left this round
-    public bool All_Players_Retired()
+    public bool AllPlayersRetired()
     {
-        return this_round.Count == 0;
+        return thisRound.Count == 0;
     }
-
-    [Command]
-    public void Add_Player(GameObject pl)
+    //Returns true if the current player has changed
+    public bool ScanForTurnChanges()
     {
-        players.Add(pl.GetComponent<PlayerNetworked>());
+        if (playersStatuses == null)
+        {
+            playersStatuses = GameObject.FindGameObjectsWithTag("Player_Networked_Object");
+        }
+
+        foreach (GameObject go in playersStatuses)
+        {
+            if(go.GetComponent<PlayerNetworked>().Player_ID == CurrentPlayersID())
+            {
+                switch (go.GetComponent<PlayerStatus>().CurrentPlayerStatus)
+                {
+                    case PlayerStatus.PlayerStatusEnum.TakingTurn: return false;
+                    case PlayerStatus.PlayerStatusEnum.Retiring: RetirePlayer(); return true;
+                    case PlayerStatus.PlayerStatusEnum.EndingTurn: NextPlayer(); return true;
+                }
+            }
+        }
+
+        return false; //Will never be reached
     }
-
-    [ClientRpc]
-    void Set_No_Players(int amount)
-    {
-
-    }
-
 
 }

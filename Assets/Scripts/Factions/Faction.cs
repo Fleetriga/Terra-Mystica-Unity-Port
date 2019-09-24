@@ -61,7 +61,7 @@ public abstract class Faction {
     //upgrade terraforming and get cost of terraforming
     public SingleIncome Get_Cost_Terraform(int upgrade_terraform)
     {
-        return Cost_Terraform.Get_Total_Income_SI(upgrade_terraform);
+        return Cost_Terraform.GetTotalIncomeAsSingleIncome(upgrade_terraform);
     }
     public bool Max_Upgrade_Terraform(int upgrade_terraform)
     {
@@ -72,7 +72,7 @@ public abstract class Faction {
     abstract public Sprite GetDefaultPieceSprite();
 
     //Accessor Methods
-    public int Get_Remaining_Starting_Dwellings()
+    public int GetRemainingStartingDwellings()
     {
         starting_dwellings--;
         return starting_dwellings;
@@ -153,7 +153,7 @@ public abstract class Faction {
     {
         switch (ft)
         {
-            case Faction_Type.Mermaids: return Mermaids.Faction_Name;
+            case Faction_Type.Mermaids: return Mermaids.FactionName;
             case Faction_Type.Test: return "TestFaction not implemented at all lad";
         }
         return "fucked if i know how you even managed this";
@@ -169,6 +169,14 @@ public abstract class Faction {
         return null;
     }
 
-
+    public static Material GetFactionMaterial(Faction_Type ft)
+    {
+        switch (ft)
+        {
+            case Faction_Type.Mermaids: return Resources.Load<Material>(Mermaids.FactionMaterial);
+            case Faction_Type.Test: return Resources.Load<Material>(TestFaction.FactionMaterial);
+        }
+        return Resources.Load<Material>(Mermaids.FactionMaterial);
+    }
 
 }

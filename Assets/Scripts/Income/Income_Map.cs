@@ -20,7 +20,7 @@ public class Income_Map{
         current_index++;
     }
 
-    int Get_Next_Index()
+    int GetNextIndex()
     {
         int i = 0;
         foreach (SingleIncome si in building_income_map){
@@ -38,24 +38,25 @@ public class Income_Map{
         return building_income_map[i];
     }
 
-    public int[] Get_Total_Income(int no_built)
+    public int[] GetTotalIncome(int no_built)
     {
-        int[] incomes = new int[4];
+        int[] incomes = new int[5];
         for (int i = 0; i < no_built; i++)
         {
             incomes[0] += building_income_map[i].Gold;
             incomes[1] += building_income_map[i].Worker;
             incomes[2] += building_income_map[i].Priest;
             incomes[3] += building_income_map[i].Magic;
+            incomes[4] += building_income_map[i].Shovel;
         }
 
         return incomes;
     }
 
-    public SingleIncome Get_Total_Income_SI(int no_built)
+    public SingleIncome GetTotalIncomeAsSingleIncome(int no_built)
     {
-        int[] temp = Get_Total_Income(no_built+1);
-        return new SingleIncome(temp[0], temp[1], temp[2], temp[3]);
+        int[] temp = GetTotalIncome(no_built+1);
+        return new SingleIncome(temp[0], temp[1], temp[2], temp[3], temp[4]);
 
     }
 

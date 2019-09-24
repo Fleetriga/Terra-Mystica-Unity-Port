@@ -80,9 +80,6 @@ public class Board : MonoBehaviour
         HashSet<Tile> allNeighbours = new HashSet<Tile>();
         HashSet<Tile> riverTiles = new HashSet<Tile>();
 
-
-        //Find all river tiles around those 
-
         //Find neighbours around all buildings. 
         foreach (Coordinate c in buildingLocs)
         {
@@ -92,7 +89,7 @@ public class Board : MonoBehaviour
             {
                 foreach (Bridge b in current.Bridges)
                 {
-                    allNeighbours.Add(b.Cross_Bridge(current)); //Add the other side of the bridge
+                    allNeighbours.Add(b.CrossBridge(current)); //Add the other side of the bridge
                 }
             }
 
@@ -180,9 +177,14 @@ public class Board : MonoBehaviour
     }
 
     //Return true if a new town can be founded
-    public bool JoinTileToTownGroup(Tile tile_, Player player)
+    public bool JoinTileToTownGroup(Tile builtUpon, Building.Building_Type newBuildingType, Player player)
     {
-        return tgc.JoinTownGroup(tile_, GetNeighbours(tile_.GetCoordinates().GetXY()), player);//Since it was just added we can access towngroup straight from the given tile
+        return tgc.JoinTownGroup(builtUpon, newBuildingType, GetNeighbours(builtUpon.GetCoordinates().GetXY()), player);//Since it was just added we can access towngroup straight from the given tile
+    }
+
+    public Tile GetTile(int[] coordinates)
+    {
+        return map[coordinates[0]].GetTile(coordinates[1]);
     }
 }
 

@@ -11,7 +11,7 @@ public class Spell {
 
     public Spell(int gold, int worker, int priest, int magic, int cost, int shovels)
     {
-        spell_income = new SingleIncome(gold, worker, priest, magic);
+        spell_income = new SingleIncome(gold, worker, priest, magic, shovels);
         mana_cost = cost;
     }
 

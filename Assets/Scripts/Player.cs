@@ -5,6 +5,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class Player : MonoBehaviour {
+
+    public GameObject localPlayerObject;
+
     //Player resources
     int money_count;
     int worker_count;
@@ -17,7 +20,7 @@ public class Player : MonoBehaviour {
     CultData cd;
 
     //Roundly variables
-    public Round_Bonus Current_Round_Bonus { get; set; }
+    public Round_Bonus CurrentRoundBonus { get; set; }
 
     //Player ID
     public int playerID;
@@ -58,9 +61,10 @@ public class Player : MonoBehaviour {
     public Faction faction;
 
     // Use this for initialization
-    public void SetUp (Faction.Faction_Type p_faction, int ID) {
+    public void SetUp (Faction.Faction_Type p_faction, int ID, GameObject bossObject) {
         //Set ID
         playerID = ID;
+        localPlayerObject = bossObject;
         
         //Create player UI pieces. 7 pieces.
         playerPieces = new PlayerPiece[] { Instantiate(playerPeice).GetComponent<PlayerPiece>(), Instantiate(playerPeice).GetComponent<PlayerPiece>() , Instantiate(playerPeice).GetComponent<PlayerPiece>(),  Instantiate(playerPeice).GetComponent<PlayerPiece>() ,
@@ -81,7 +85,7 @@ public class Player : MonoBehaviour {
         shipping = faction.GetDefaultShipping();
         current_upgrade_terraform = 0;
 
-        //Starting building locations is empty
+        //Starting list of "built upon" coordinates is empty
         buildingLocs = new List<Coordinate>();
 
         //Starting cult tracks
@@ -106,9 +110,6 @@ public class Player : MonoBehaviour {
 
         //Update the UI after setting up all variables
         UpdateResourceText();
-
-        //Give yourself to the loop controller
-        //GameObject.Find("Controller").GetComponent<Game_Loop_Controller>().Add_Player();
 	}
 
     void SetUpPieces()
@@ -124,23 +125,23 @@ public class Player : MonoBehaviour {
         ResetIncomes();
 
         //For dwells
-        int[] income = faction.Get_dwelling_income().Get_Total_Income(current_dwelling);
+        int[] income = faction.Get_dwelling_income().GetTotalIncome(current_dwelling);
         AddTo_Income(income);
         
         //For tps
-        income = faction.Get_tp_income().Get_Total_Income(current_tp);
+        income = faction.Get_tp_income().GetTotalIncome(current_tp);
         AddTo_Income(income);
 
         //For fortress
-        income = faction.Get_fortress_income().Get_Total_Income(current_fortress);
+        income = faction.Get_fortress_income().GetTotalIncome(current_fortress);
         AddTo_Income(income);
 
         //For temples
-        income = faction.Get_temple_income().Get_Total_Income(current_temple);
+        income = faction.Get_temple_income().GetTotalIncome(current_temple);
         AddTo_Income(income);
 
         //For sancuary
-        income = faction.Get_sanctuary_income().Get_Total_Income(current_sanctuary);
+        income = faction.Get_sanctuary_income().GetTotalIncome(current_sanctuary);
         AddTo_Income(income);
 
         income = new int[] { bonus_gold, bonus_worker, bonus_priest, bonus_magic };
@@ -157,7 +158,7 @@ public class Player : MonoBehaviour {
     }
 
     //Adds income as a permanant increase
-    public void Add_To_NonBuilding_Income(int[] income)
+    public void AddToNonBuildingIncome(int[] income)
     {
         bonus_gold += income[0];
         bonus_worker += income[1];
@@ -170,11 +171,12 @@ public class Player : MonoBehaviour {
     //Adds income as a one time only
     public void AddSingleIncome(SingleIncome income)
     {
-        int[] incomes = income.Income_AsArray();
+        int[] incomes = income.IncomeAsArray();
         money_count += incomes[0];
         worker_count += incomes[1];
         priest_count += incomes[2];
         tier_magic.AddMagic(incomes[3]);
+        shovel_count += incomes[4];
         UpdateResourceText();
     }
 
@@ -196,7 +198,7 @@ public class Player : MonoBehaviour {
                 temp = faction.Get_cost_build_dwelling(); break;
             case Building.Building_Type.Trading_Post:
                 temp = faction.Get_cost_build_TP(); break;
-            case Building.Building_Type.Fortress:
+            case Building.Building_Type.Stronghold:
                 temp = faction.Get_cost_build_stronghold(); break; 
             case Building.Building_Type.Sanctuary:
                 temp = faction.Get_cost_build_temple(); break; 
@@ -242,8 +244,11 @@ public class Player : MonoBehaviour {
             else //If we still need to terraform, convert workers into shovels and then use them
             {
                 AddSingleIncome(faction.Get_Cost_Terraform(current_upgrade_terraform).Reciprocal());
+                CheckPoints(PointBonus.Action_Type.Terraform);
             } 
         }
+
+        ui.UpdatePoints(Points);
     }
 
     public void Build(Building.Building_Type bt)
@@ -263,11 +268,12 @@ public class Player : MonoBehaviour {
                 ui.DisplayRemaining(Building.Building_Type.Dwelling, Get_Remaining_Index(Building.Building_Type.Dwelling));
                 current_tp++; current_dwelling--;
                 break;
-            case Building.Building_Type.Fortress:
+            case Building.Building_Type.Stronghold:
                 money_count = money_count - faction.Get_cost_build_stronghold()[0];
                 worker_count = worker_count - faction.Get_cost_build_stronghold()[1];
                 ui.DisplayRemaining(Building.Building_Type.Trading_Post, Get_Remaining_Index(Building.Building_Type.Trading_Post));
                 current_fortress++; current_tp--;
+                CheckPoints(PointBonus.Action_Type.BuildT3); //Special point bonus
                 break;
             case Building.Building_Type.Temple:
                 money_count = money_count - faction.Get_cost_build_temple()[0];
@@ -280,8 +286,12 @@ public class Player : MonoBehaviour {
                 worker_count = worker_count - faction.Get_cost_build_sanctuary()[1];
                 ui.DisplayRemaining(Building.Building_Type.Temple, Get_Remaining_Index(Building.Building_Type.Temple));
                 current_sanctuary++; current_temple--;
+                CheckPoints(PointBonus.Action_Type.BuildT3); //Special point bonus
                 break;
         }
+        CheckPoints(PointBonus.MapBuildingToAction(bt)); //Check if we gained any points#
+        ui.UpdatePoints(Points);
+
         //Finally update UI for building which is losing one of itself
         ui.DisplayRemaining(bt, Get_Remaining_Index(bt));
     }
@@ -293,7 +303,7 @@ public class Player : MonoBehaviour {
         {
             case Building.Building_Type.Dwelling: return faction.max_dwelling - current_dwelling;
             case Building.Building_Type.Trading_Post: return faction.max_tp - current_tp;
-            case Building.Building_Type.Fortress: return faction.max_fortress - current_fortress;
+            case Building.Building_Type.Stronghold: return faction.max_fortress - current_fortress;
             case Building.Building_Type.Temple: return faction.max_temple - current_temple;
             case Building.Building_Type.Sanctuary: return faction.max_sanctuary - current_sanctuary;
         }
@@ -317,13 +327,15 @@ public class Player : MonoBehaviour {
                 ui.DisplayRemaining(Building.Building_Type.Dwelling, Get_Remaining_Index(Building.Building_Type.Dwelling));
                 current_tp++; current_dwelling--;
                 break;
-            case Building.Building_Type.Fortress:
+            case Building.Building_Type.Stronghold:
                 ui.DisplayRemaining(Building.Building_Type.Trading_Post, Get_Remaining_Index(Building.Building_Type.Trading_Post));
                 current_fortress++; current_tp--;
+                CheckPoints(PointBonus.Action_Type.BuildT3); //Special point bonus
                 break;
             case Building.Building_Type.Sanctuary:
                 ui.DisplayRemaining(Building.Building_Type.Trading_Post, Get_Remaining_Index(Building.Building_Type.Trading_Post));
                 current_temple++; current_tp--;
+                CheckPoints(PointBonus.Action_Type.BuildT3); //Special point bonus
                 break;
             case Building.Building_Type.Temple:
                 current_sanctuary++; current_temple--;
@@ -395,13 +407,13 @@ public class Player : MonoBehaviour {
     }
 
     //Cults
-    public bool Add_To_Track_Level(CultIncome income, int[] max)
+    public bool AddToTrackLevel(CultIncome income, int[] max)
     {
         bool temp = cd.Add_To_Track_Level(income, max);
         ui.UpdatePlayerCultTrack(cd);
         return temp;
     }
-    public CultData Get_CultData()
+    public CultData GetCultData()
     {
         return cd;
     }
@@ -415,27 +427,21 @@ public class Player : MonoBehaviour {
     {
         Points += pk.GetPointBonus(at_);
     }
-
     public void UpdateResourceText()
     {
         ui.UpdateResourceText(new int[] { money_count, worker_count, priest_count, shovel_count }, new int[] { money_income, worker_income, priest_income});
         ui.UpdateMagicTiers(tier_magic.GetTiers());
         ui.UpdatePoints(Points);
     }
-
-    public void Add_Point_Bonus(PointBonus pb_, bool temporary)
+    public void AddPointBonus(PointBonus pb_, bool temporary)
     {
         pk.AddPointBonus(pb_, temporary);
     }
-
-    public void Reset_Temporary_Point_Bonuses()
+    public void ResetTemporaryPointBonuses()
     {
         pk.ResetTempBonuses();
     }
-
-    /** First calculates how many buildings of the type specified within the PointBonus there is.
-     *  Then 
-     */
+    // First calculates how many buildings of the type specified within the PointBonus there is.
     public void CalculateAccumulativeBonuses()
     {
         int konkai_points = 0;
@@ -443,22 +449,22 @@ public class Player : MonoBehaviour {
         {
             if (pb.Array)
             {
-                konkai_points += pb.PointBonusAr[Get_No_Buildings(PointBonus.MapActionToBuilding(pb.GetActionType()))-1] * pb.pointBonus;
+                konkai_points += pb.PointBonusAr[GetNoBuildings(PointBonus.MapActionToBuilding(pb.GetActionType()))-1] * pb.pointBonus;
             }
             else
             {
-                konkai_points += Get_No_Buildings(PointBonus.MapActionToBuilding(pb.GetActionType())) * pb.pointBonus;
+                konkai_points += GetNoBuildings(PointBonus.MapActionToBuilding(pb.GetActionType())) * pb.pointBonus;
             }
         }
         foreach (PointBonus pb in pk.Accumulative_temp)
         {
             if (pb.Array)
             {
-                konkai_points += pb.PointBonusAr[Get_No_Buildings(PointBonus.MapActionToBuilding(pb.GetActionType()))-1] * pb.pointBonus;
+                konkai_points += pb.PointBonusAr[GetNoBuildings(PointBonus.MapActionToBuilding(pb.GetActionType()))-1] * pb.pointBonus;
             }
             else
             {
-                konkai_points += Get_No_Buildings(PointBonus.MapActionToBuilding(pb.GetActionType())) * pb.pointBonus;
+                konkai_points += GetNoBuildings(PointBonus.MapActionToBuilding(pb.GetActionType())) * pb.pointBonus;
             }
         }
         Points += konkai_points;
@@ -469,10 +475,21 @@ public class Player : MonoBehaviour {
     {
         CalculateIncome();
         UpdateResourceText();
+
+        //Tell the network that it's over
+        localPlayerObject.GetComponent<PlayerStatus>().Cmd_SetPlayerStatus(PlayerStatus.PlayerStatusEnum.EndingTurn);
+    }
+    public bool TakingTurn()
+    {
+        return localPlayerObject.GetComponent<PlayerStatus>().CurrentPlayerStatus == PlayerStatus.PlayerStatusEnum.TakingTurn;
+    }
+    public void Retire()
+    {
+        localPlayerObject.GetComponent<PlayerStatus>().Cmd_SetPlayerStatus(PlayerStatus.PlayerStatusEnum.Retiring);
     }
 
     //Increases the players resources by their roundly income
-    public void Increase_Count_By_Income()
+    public void IncreaseCountByIncome()
     {
         //First we calculate it, just in case it changed
         CalculateIncome();
@@ -487,7 +504,7 @@ public class Player : MonoBehaviour {
     }
 
     //Accessor Methods from here
-    int Get_No_Buildings(Building.Building_Type bt_)
+    int GetNoBuildings(Building.Building_Type bt_)
     {
         switch (bt_)
         {
@@ -495,7 +512,7 @@ public class Player : MonoBehaviour {
                 return current_dwelling;
             case Building.Building_Type.Trading_Post:
                 return current_tp;
-            case Building.Building_Type.Fortress:
+            case Building.Building_Type.Stronghold:
                 return current_fortress;
             case Building.Building_Type.Temple:
                 return current_temple;
@@ -504,44 +521,10 @@ public class Player : MonoBehaviour {
         }
         return 0;
     }
-    public Material Get_Building_Material()
-    {
-        return faction.Get_Building_Material();
-    }
-
-    public int Get_Money_Count()
-    {
-        return money_count;
-    }
-
-    public int Get_Worker_Count()
-    {
-        return worker_count;
-    }
-
-    public int Get_Money_Income()
-    {
-        return money_income;
-    }
-
-    public int Get_Worker_Income()
-    {
-        return worker_income;
-    }
 
     public Terrain.TerrainType GetHabitat()
     {
         return faction.GetHabitat();
-    }
-
-    public int GetShovelCount()
-    {
-        return shovel_count;
-    }
-
-    public int GetPointBonus(PointBonus.Action_Type at_)
-    {
-        return pk.GetPointBonus(at_);
     }
 
     public int GetShipping()
@@ -554,8 +537,8 @@ public class Player : MonoBehaviour {
         return playerPieces[index];
     }
 
-    public int Get_Remaining_Starting_Dwellings()
+    public int GetRemainingStartingDwellings()
     {
-        return faction.Get_Remaining_Starting_Dwellings();
+        return faction.GetRemainingStartingDwellings();
     }
 }
