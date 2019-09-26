@@ -6,10 +6,10 @@ using Mirror;
 public class PlayerStatistics : NetworkBehaviour
 {
     //Player resources
-    int money_count;
-    int worker_count;
-    int priest_count;
-    int points;
+    public int PlayerGold;
+    public int PlayerWorkers;
+    public int PlayerPriests;
+    public int PlayerPoints;
 
     // Start is called before the first frame update
     void Start()

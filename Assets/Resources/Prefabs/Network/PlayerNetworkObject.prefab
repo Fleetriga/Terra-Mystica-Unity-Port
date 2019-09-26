@@ -13,8 +13,9 @@ GameObject:
   - component: {fileID: 4696007660654311864}
   - component: {fileID: 2678737269842740147}
   - component: {fileID: 717155727272584582}
+  - component: {fileID: 1344823746850441463}
   m_Layer: 0
-  m_Name: Player_NetworkObject
+  m_Name: PlayerNetworkObject
   m_TagString: Player_Networked_Object
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -106,3 +107,16 @@ MonoBehaviour:
   PickedRoundBonus: 9
   CastedSpell: 9
   Change: 7
+--- !u!114 &1344823746850441463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3479789776446344861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c510749916f00944eb0939805141876f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncInterval: 0.1
