@@ -33,9 +33,9 @@ public class TurnSimulator : MonoBehaviour
             {
                 switch (ttd.Change)
                 {
-                    case TakenTurnData.ChangeFlag.Build: SimulateBuild(new int[] { ttd.CoordinateX, ttd.CoordinateY }, ttd.Built, go.GetComponent<PlayerNetworked>().GetFactionMaterial(), go.GetComponent<PlayerNetworked>().Player_ID); break;
+                    case TakenTurnData.ChangeFlag.Build: SimulateBuild(new int[] { ttd.CoordinateX, ttd.CoordinateY }, ttd.Built, go.GetComponent<PlayerNetworked>().GetFactionMaterial(), go.GetComponent<PlayerNetworked>().PlayerID); break;
                     case TakenTurnData.ChangeFlag.Terraform: SimulateTerraform(new int[] { ttd.CoordinateX, ttd.CoordinateY }, ttd.Terraformed); break;
-                    case TakenTurnData.ChangeFlag.RoundBonus: SimulateRoundBonusPicked(ttd.PickedRoundBonus); break;
+                    case TakenTurnData.ChangeFlag.RoundBonus: SimulateRoundBonusPicked(ttd.PickedRoundBonus, ttd.ReturnedRoundBonus); break;
                     case TakenTurnData.ChangeFlag.FoundedCity: SimulateCityFounding(ttd.FoundedCityBonus); break;
                     case TakenTurnData.ChangeFlag.FavourBonus: SimulateFavourTaken(ttd.CoordinateX, ttd.CoordinateY); break;
                     case TakenTurnData.ChangeFlag.CastWorldMagic: CastWorldMagic(ttd.CastedSpell); break;
@@ -88,8 +88,9 @@ public class TurnSimulator : MonoBehaviour
     }
 
     //Takes round bonus. Disables the picking of that round bonus tile.
-    public void SimulateRoundBonusPicked(RoundBonusManager.RoundBonusType bonusType)
+    public void SimulateRoundBonusPicked(RoundBonusManager.RoundBonusType bonusType, RoundBonusManager.RoundBonusType returnedBonus)
     {
         roundBonusManager.TakeRoundBonus(bonusType);
+        roundBonusManager.ReturnRoundBonus(returnedBonus);
     }
 }

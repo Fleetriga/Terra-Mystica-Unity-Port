@@ -20,7 +20,7 @@ public class Mermaids : Faction {
 
         magic_default = new Magic(7, 5, 0);
 
-        habitat = Terrain.TerrainType.Swamp;
+        habitat = Terrain.TerrainType.Lakes;
 
         max_upgrade_terraform = 3;
 

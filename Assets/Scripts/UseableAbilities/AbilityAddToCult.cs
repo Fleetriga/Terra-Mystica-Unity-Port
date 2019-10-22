@@ -29,6 +29,7 @@ public class AbilityAddToCult : UseableAbility {
                 ci = new CultIncome(0, 0, 0, 1); break;
         }
         controller.AddCultIncome(ci);
+        controller.EndTurn();
 
         //Then unpair the 4 cult buttons and send it off
         cults.transform.SetParent(offScreenTransform.transform);

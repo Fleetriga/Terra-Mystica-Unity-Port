@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,7 +16,7 @@ public class RoundBonusManager : MonoBehaviour {
 	public void SetUp()
     {
         int noPlayers = 2;
-        Random.InitState(GameObject.Find("RandomSeed").GetComponent<NetworkedRandomSeed>().randomSeed);
+        UnityEngine.Random.InitState(GameObject.Find("RandomSeed").GetComponent<NetworkedRandomSeed>().randomSeed);
 
         round_bonuses = new Round_Bonus[] { new Round_Bonus(null, new SingleIncome(0,0,1,0,0), RoundBonusType.Priest), //Priest
                                             new Round_Bonus(null, new SingleIncome(0,1,0,3,0), RoundBonusType.OneWorker_ThreeMagic), //1 worker 3 magic
@@ -30,7 +31,7 @@ public class RoundBonusManager : MonoBehaviour {
 
         for (int i = 0; i < noPlayers+3; i++) //pick random round bonuses
         {
-            inactiveBonuses.GetChild(Random.Range(0, inactiveBonuses.transform.childCount)).SetParent(activeBonuses);
+            inactiveBonuses.GetChild(UnityEngine.Random.Range(0, inactiveBonuses.transform.childCount)).SetParent(activeBonuses);
         }
         for (int i = 0; i < activeBonuses.childCount; i++) //Reposition this games bonuses
         {
@@ -47,12 +48,28 @@ public class RoundBonusManager : MonoBehaviour {
         return round_bonuses[(int)rbt];
     }
 
+    public void PutBackRoundBonus(RoundBonusType rbt)
+    {
+        takenBonuses.Remove(rbt);
+    }
+
     public void TakeRoundBonus(RoundBonusType taken)
     {
         takenBonuses.Add(taken);
         foreach (Transform go in activeBonuses)
         {
             if (go.GetComponent<RoundBonusMono>().type == taken) { go.gameObject.SetActive(false); }
+        }
+    }
+
+    internal void ReturnRoundBonus(RoundBonusType returnedBonus)
+    {
+        if (returnedBonus == RoundBonusType.NOTHING) { return; };
+
+        takenBonuses.Remove(returnedBonus);
+        foreach (Transform go in activeBonuses)
+        {
+            if (go.GetComponent<RoundBonusMono>().type == returnedBonus) { go.gameObject.SetActive(false); }
         }
     }
 

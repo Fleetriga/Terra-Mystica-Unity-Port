@@ -6,16 +6,14 @@ public class PlayerNetworked : NetworkBehaviour {
 
     public GameObject playerGameObject;
     public GameObject dropDown;
-
-    //Turn Controlling. Only set on host
-    public int CurrentPlayer;
+    public GameObject turnControllerPrefab;
 
     [SyncVar]
-    public int Player_ID;
+    public int PlayerID;
     [SyncVar]
     public bool isHost;
     [SyncVar]
-    public Faction.Faction_Type p_faction;
+    public Faction.FactionType p_faction;
 
     // Use this for initialization
     void Start() {
@@ -32,6 +30,7 @@ public class PlayerNetworked : NetworkBehaviour {
         if (isServer) // player object becomes TurnController for everyone;
         {
             Cmd_SetHost();
+            Cmd_SpawnTurnController();
         }
 
         //Spawn the dropdown and turn controller
@@ -47,27 +46,7 @@ public class PlayerNetworked : NetworkBehaviour {
         gameObject.AddComponent<PlayerStatus>();
     }
 
-    void Update()
-    {
-        //If you are the host, scan other players and yourself for turn changes
-        if (isHost && hasAuthority && GetComponent<TurnController>() != null)
-        {
-            if (GetComponent<TurnController>().ScanForTurnChanges()) { Cmd_SetCurrentPlayer(GetComponent<TurnController>().CurrentPlayersID()); }
-        }
-    }
-
     //Host methods
-    [Command]
-    void Cmd_SetCurrentPlayer(int newCurrentPlayersId)
-    {
-        CurrentPlayer = newCurrentPlayersId;
-        Rpc_SetCurrentPlayer(newCurrentPlayersId);
-    }
-    [ClientRpc]
-    void Rpc_SetCurrentPlayer(int newCurrentPlayersId)
-    {
-        CurrentPlayer = newCurrentPlayersId;
-    }
     [Command]
     void Cmd_SetHost()
     {
@@ -75,25 +54,42 @@ public class PlayerNetworked : NetworkBehaviour {
         isHost = true;
     }
 
-    void OnLevelWasLoaded()
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnLevelFinishedLoading;
+    }
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnLevelFinishedLoading;
+    }
+
+    void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
     {
         if (hasAuthority)
         {
+            GetComponent<PlayerStatus>().EnableStatusCheck();
             GameObject go = Instantiate(playerGameObject);
-            go.GetComponent<Player>().SetUp(p_faction, Player_ID, gameObject);
-            GameObject.Find("Controller").GetComponent<GameController>().Start_Game();
+            go.GetComponent<Player>().SetUp(p_faction, PlayerID, gameObject);
+            GameObject.Find("Controller").GetComponent<GameController>().StartGame();
         }
     }
 
-    public string Set_Faction(Faction.Faction_Type i)
+    public string Set_Faction(Faction.FactionType i)
     {
         Cmd_SetFaction(i);
         return Faction.GetFaction(i);
     }
     [Command]
-    public void Cmd_SetFaction(Faction.Faction_Type i)
+    public void Cmd_SetFaction(Faction.FactionType i)
     {
         p_faction = i;
+    }
+
+    [Command]
+    void Cmd_SpawnTurnController()
+    {
+        GameObject go = Instantiate(turnControllerPrefab);
+        NetworkServer.Spawn(go);
     }
 
     [Command]
@@ -107,15 +103,13 @@ public class PlayerNetworked : NetworkBehaviour {
     [ClientRpc]
     void Rpc_SetIDMoveDropDown(int yDifference, GameObject go)
     {
-        Player_ID = GameObject.FindGameObjectsWithTag("Player_Networked_Object").Length - 1;
-        go.transform.GetChild(0).GetComponent<RectTransform>().localPosition = new Vector2(0, yDifference * Player_ID);
+        PlayerID = GameObject.FindGameObjectsWithTag("Player_Networked_Object").Length - 1;
+        go.transform.GetChild(0).GetComponent<RectTransform>().localPosition = new Vector2(0, yDifference * PlayerID);
     }
 
     public void StartGamePreparations()
     {
         if (!hasAuthority || !isHost) { return; } //If the player is not the host
-        gameObject.AddComponent<TurnController>();
-        GetComponent<TurnController>().SetUp(NetworkServer.connections.Count);
         Rpc_ChangeScene("GameScene");
     }
     [ClientRpc]

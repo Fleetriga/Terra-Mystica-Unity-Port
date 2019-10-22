@@ -68,8 +68,9 @@ MonoBehaviour:
     type: 3}
   dropDown: {fileID: 9211180173593796409, guid: dc8f7be8733289f489e77b5b440599bd,
     type: 3}
-  CurrentPlayer: 0
-  Player_ID: 0
+  turnControllerPrefab: {fileID: 1286079630539784735, guid: 9f9b16fe2886d894f8d8e47e5b87f7e7,
+    type: 3}
+  PlayerID: 0
   isHost: 0
   p_faction: 0
 --- !u!114 &2678737269842740147
@@ -120,3 +121,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   syncInterval: 0.1
+  PlayerGold: 0
+  PlayerWorkers: 0
+  PlayerPriests: 0
+  PlayerPoints: 0
+  tierOne: 0
+  tierTwo: 0
+  tierThree: 0

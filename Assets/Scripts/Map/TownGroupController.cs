@@ -27,6 +27,8 @@ public class TownGroupController {
         //Now that it's been added to the group, add it's points on
         builtUpon.GetTownGroup().AddTownProgress(Building.GetBuildingValue(newBuildingType));
 
+        Debug.Log(builtUpon.GetTownGroup().GetProgress());
+
         return CheckNewTown(builtUpon.GetTownGroup()); //Return true or false depending on whether a new town is built or not
     }
 

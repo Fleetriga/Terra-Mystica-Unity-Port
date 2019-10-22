@@ -1,11 +1,13 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RoundEndBonusManager : MonoBehaviour
 {
     RoundEndBonus[] roundEndBonuses;
-    RoundEndBonus[] activeRoundEndBonuses;
+    public Sprite finishedRoundEndBonus;
     public GameObject[] roundEndBonusGameObjects;
     public Transform activeBonuses;
     public Transform inactiveBonuses;
@@ -13,7 +15,7 @@ public class RoundEndBonusManager : MonoBehaviour
 
     public void SetUp()
     {
-        Random.InitState(GameObject.Find("RandomSeed").GetComponent<NetworkedRandomSeed>().randomSeed);
+        UnityEngine.Random.InitState(GameObject.Find("RandomSeed").GetComponent<NetworkedRandomSeed>().randomSeed);
 
         roundEndBonuses = new RoundEndBonus[] { new RoundEndBonus(new PointBonus(PointBonus.Action_Type.Build_Dwelling, 2), new CultIncome(0,4,0,0), new SingleIncome(0,0,1,0,0)),
                                                 new RoundEndBonus(new PointBonus(PointBonus.Action_Type.Build_Dwelling, 2), new CultIncome(4,0,0,0), new SingleIncome(0,0,0,4,0)),
@@ -26,7 +28,7 @@ public class RoundEndBonusManager : MonoBehaviour
         //
         for (int i = 0; i < 6; i++) //pick 6 random round end bonuses. Set them as active
         {
-            inactiveBonuses.GetChild(Random.Range(0, inactiveBonuses.transform.childCount)).SetParent(activeBonuses);
+            inactiveBonuses.GetChild(UnityEngine.Random.Range(0, inactiveBonuses.transform.childCount)).SetParent(activeBonuses);
         }
         for (int i = 0; i < activeBonuses.childCount; i++) //Reposition this games bonuses
         {
@@ -45,5 +47,10 @@ public class RoundEndBonusManager : MonoBehaviour
     public void ResetBonuses()
     {
 
+    }
+
+    public void GreyOutRoundEndBonus(int currentRoundNumber)
+    {
+        activeBonuses.GetChild(currentRoundNumber).GetComponent<Image>().sprite = finishedRoundEndBonus;
     }
 }

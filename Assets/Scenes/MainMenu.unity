@@ -274,9 +274,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8133784712848136263, guid: c029785c23870fa4f9aac8b8c4f1e9b2,
         type: 3}
+      propertyPath: spawnPrefabs.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8133784712848136263, guid: c029785c23870fa4f9aac8b8c4f1e9b2,
+        type: 3}
       propertyPath: spawnPrefabs.Array.data[2]
       value: 
       objectReference: {fileID: 2087729297351512228, guid: 105f8eba9004f434ab765ab3d9c12432,
+        type: 3}
+    - target: {fileID: 8133784712848136263, guid: c029785c23870fa4f9aac8b8c4f1e9b2,
+        type: 3}
+      propertyPath: spawnPrefabs.Array.data[3]
+      value: 
+      objectReference: {fileID: 1286079630539784735, guid: 9f9b16fe2886d894f8d8e47e5b87f7e7,
         type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c029785c23870fa4f9aac8b8c4f1e9b2, type: 3}
@@ -588,11 +599,11 @@ RectTransform:
   m_Father: {fileID: 1004028955}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 550, y: -291}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 160, y: 30}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 1, y: 0}
 --- !u!114 &2012942753
 MonoBehaviour:
   m_ObjectHideFlags: 0

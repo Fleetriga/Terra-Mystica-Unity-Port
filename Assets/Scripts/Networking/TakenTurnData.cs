@@ -13,6 +13,7 @@ public class TakenTurnData : NetworkBehaviour
     public Terrain.TerrainType Terraformed;
     public TownFoundingBonusManager.TownTiletype FoundedCityBonus;
     public RoundBonusManager.RoundBonusType PickedRoundBonus;
+    public RoundBonusManager.RoundBonusType ReturnedRoundBonus;
     public MagicController.SpellType CastedSpell;
 
     public enum ChangeFlag { Build, Terraform, RoundBonus, FoundedCity, FavourBonus, CastWorldMagic, BuildBridge, NOTHING };
@@ -44,6 +45,11 @@ public class TakenTurnData : NetworkBehaviour
         Cmd_SetChangeFlag(ChangeFlag.RoundBonus);
     }
 
+    public void SendRoundBonusReturned(RoundBonusManager.RoundBonusType returnedBonus)
+    {
+        Cmd_ChangeReturnedRoundBonusPickedData(returnedBonus);
+    }
+
     public void SendPickedFavourData(int track, int tier)
     {
         Cmd_ChangeFavourPickedData(track, tier);
@@ -70,6 +76,7 @@ public class TakenTurnData : NetworkBehaviour
         Built = Building.Building_Type.NOTHING;
         Terraformed = Terrain.TerrainType.NOTHING;
         PickedRoundBonus = RoundBonusManager.RoundBonusType.NOTHING;
+        ReturnedRoundBonus = RoundBonusManager.RoundBonusType.NOTHING;
         FoundedCityBonus = TownFoundingBonusManager.TownTiletype.NOTHING;
         CastedSpell = MagicController.SpellType.NOTHING;
 
@@ -79,8 +86,6 @@ public class TakenTurnData : NetworkBehaviour
     [Command]
     void Cmd_ChangeCoordinateData(int x, int y)
     {
-        CoordinateX = x;
-        CoordinateY = y;
         Rpc_ChangeCoordinateData(x, y);
     }
     [ClientRpc]
@@ -93,7 +98,6 @@ public class TakenTurnData : NetworkBehaviour
     [Command]
     void Cmd_ChangeBuildFlagData(Building.Building_Type newBuilding)
     {
-        Built = newBuilding;
         Rpc_ChangeBuildFlagData(newBuilding);
     }
     [ClientRpc]
@@ -105,7 +109,6 @@ public class TakenTurnData : NetworkBehaviour
     [Command]
     void Cmd_ChangeTerraformFlagData(Terrain.TerrainType newTerrain)
     {
-        Terraformed = newTerrain;
         Rpc_ChangeTerraformFlagData(newTerrain);
     }
     [ClientRpc]
@@ -117,7 +120,6 @@ public class TakenTurnData : NetworkBehaviour
     [Command]
     void Cmd_ChangeFoundedCityData(TownFoundingBonusManager.TownTiletype bonus)
     {
-        FoundedCityBonus = bonus;
         Rpc_ChangeFoundedCityData(bonus);
     }
     [ClientRpc]
@@ -129,7 +131,6 @@ public class TakenTurnData : NetworkBehaviour
     [Command]
     void Cmd_ChangeRoundBonusPickedData(RoundBonusManager.RoundBonusType bonus)
     {
-        PickedRoundBonus = bonus;
         Rpc_ChangeRoundBonusPickedData(bonus);
     }
     [ClientRpc]
@@ -141,7 +142,6 @@ public class TakenTurnData : NetworkBehaviour
     [Command]
     void Cmd_ChangeFavourPickedData(int track, int tier)
     {
-        CoordinateX = track; CoordinateY = tier;
         Rpc_ChangeFavourPickedData(track, tier);
     }
     [ClientRpc]
@@ -153,7 +153,6 @@ public class TakenTurnData : NetworkBehaviour
     [Command]
     void Cmd_ChangeCastedSpellData(MagicController.SpellType casted)
     {
-        CastedSpell = casted;
         Rpc_ChangeCastedSpellData(casted);
     }
     [ClientRpc]
@@ -163,9 +162,19 @@ public class TakenTurnData : NetworkBehaviour
     }
 
     [Command]
+    public void Cmd_ChangeReturnedRoundBonusPickedData(RoundBonusManager.RoundBonusType returnedBonus)
+    {
+        Rpc_ChangeReturnedRoundBonusPickedData(returnedBonus);
+    }
+    [ClientRpc]
+    public void Rpc_ChangeReturnedRoundBonusPickedData(RoundBonusManager.RoundBonusType returnedBonus)
+    {
+        ReturnedRoundBonus = returnedBonus;
+    }
+
+    [Command]
     void Cmd_SetChangeFlag(ChangeFlag newFlag)
     {
-        Change = newFlag;
         Rpc_SetChangeFlag(newFlag);
     }
     [ClientRpc]

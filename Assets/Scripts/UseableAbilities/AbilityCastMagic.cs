@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AbilityCastMagic : UseableAbility {
     public GameController controller;
-    public Global_Flags global;
+    public GlobalFlags global;
 
 	public void CastMagic(int magicType)
     {

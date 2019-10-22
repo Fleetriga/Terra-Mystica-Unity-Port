@@ -89,7 +89,7 @@ public class Board : MonoBehaviour
             {
                 foreach (Bridge b in current.Bridges)
                 {
-                    allNeighbours.Add(b.CrossBridge(current)); //Add the other side of the bridge
+                    allNeighbours.Add(b.CrossBridgeFrom(current)); //Add the other side of the bridge
                 }
             }
 
@@ -179,7 +179,21 @@ public class Board : MonoBehaviour
     //Return true if a new town can be founded
     public bool JoinTileToTownGroup(Tile builtUpon, Building.Building_Type newBuildingType, Player player)
     {
-        return tgc.JoinTownGroup(builtUpon, newBuildingType, GetNeighbours(builtUpon.GetCoordinates().GetXY()), player);//Since it was just added we can access towngroup straight from the given tile
+        //Need to gather neighbours within range of given tile first.  INCLUDING ANY JOINED BY BRIDGES
+        List<Tile> neighboursAfterBridgesAccountedFor = GetNeighbours(builtUpon.GetCoordinates().GetXY());
+
+        if (builtUpon.Bridges.Count > 0) //First check it has bridges
+        {
+            foreach (Bridge b in builtUpon.Bridges) //For every bridge cross it and see if it's a friendly owned tile. If it is, add it to the neighbours group.
+            {
+                if (b.CrossBridgeFrom(builtUpon).OwnersPlayerID == player.playerID)
+                {
+                    neighboursAfterBridgesAccountedFor.Add(b.CrossBridgeFrom(builtUpon));
+                }
+            }
+        }
+        
+        return tgc.JoinTownGroup(builtUpon, newBuildingType, neighboursAfterBridgesAccountedFor, player);//Since it was just added we can access towngroup straight from the given tile
     }
 
     public Tile GetTile(int[] coordinates)

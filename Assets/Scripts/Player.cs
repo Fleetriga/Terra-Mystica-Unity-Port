@@ -7,19 +7,16 @@ using UnityEngine.UI;
 public class Player : MonoBehaviour {
 
     public GameObject localPlayerObject;
+    PlayerStatistics publicPlayerAttributes;
 
     //Player resources
-    int money_count;
-    int worker_count;
-    int priest_count;
     int shovel_count;
-    Magic tier_magic;
-    public int Points { get; set; }
+    Magic tierMagic;
     int shipping;
     int current_upgrade_terraform;
     CultData cd;
 
-    //Roundly variables
+    //Round pick up bonuses
     public Round_Bonus CurrentRoundBonus { get; set; }
 
     //Player ID
@@ -61,11 +58,12 @@ public class Player : MonoBehaviour {
     public Faction faction;
 
     // Use this for initialization
-    public void SetUp (Faction.Faction_Type p_faction, int ID, GameObject bossObject) {
+    public void SetUp (Faction.FactionType p_faction, int ID, GameObject bossObject) {
         //Set ID
         playerID = ID;
         localPlayerObject = bossObject;
-        
+        publicPlayerAttributes = bossObject.GetComponent<PlayerStatistics>();
+
         //Create player UI pieces. 7 pieces.
         playerPieces = new PlayerPiece[] { Instantiate(playerPeice).GetComponent<PlayerPiece>(), Instantiate(playerPeice).GetComponent<PlayerPiece>() , Instantiate(playerPeice).GetComponent<PlayerPiece>(),  Instantiate(playerPeice).GetComponent<PlayerPiece>() ,
                                            Instantiate(playerPeice).GetComponent<PlayerPiece>(), Instantiate(playerPeice).GetComponent<PlayerPiece>()};
@@ -79,7 +77,7 @@ public class Player : MonoBehaviour {
 
         //points
         pk = new PointKeeper();
-        Points = 20;
+        publicPlayerAttributes.CmdSetPoints(20);
 
         //Shipping & terraform upgrade levels
         shipping = faction.GetDefaultShipping();
@@ -97,20 +95,30 @@ public class Player : MonoBehaviour {
         ui.UpdatePlayerCultTrack(cd);
 
         //Starting resources and income and update UI resources/income
-        money_count = faction.Starting_gold;
-        worker_count = faction.Starting_worker;
-        priest_count = faction.Starting_priest;
+        publicPlayerAttributes.CmdSetGold(faction.Starting_gold);
+        publicPlayerAttributes.CmdSetWorkers(faction.Starting_worker);
+        publicPlayerAttributes.CmdSetPriests(faction.Starting_priest);
         shovel_count = faction.Starting_shovels;
 
         CalculateIncome();
 
-        tier_magic = faction.GetDefaultMagic();
+        tierMagic = faction.GetDefaultMagic(); UpdateMagicPublicVariables();
 
         PointsForTown = 7;
 
         //Update the UI after setting up all variables
         UpdateResourceText();
 	}
+
+    internal bool CheckPlayerCanAfford(SingleIncome price)
+    {
+        return publicPlayerAttributes.PlayerGold >= price.Gold && publicPlayerAttributes.PlayerWorkers >= price.Worker && publicPlayerAttributes.PlayerPriests >= price.Priest;
+    }
+
+    void UpdateMagicPublicVariables()
+    {
+        publicPlayerAttributes.CmdSetMagics(tierMagic.GetTiers());
+    }
 
     void SetUpPieces()
     {
@@ -172,10 +180,10 @@ public class Player : MonoBehaviour {
     public void AddSingleIncome(SingleIncome income)
     {
         int[] incomes = income.IncomeAsArray();
-        money_count += incomes[0];
-        worker_count += incomes[1];
-        priest_count += incomes[2];
-        tier_magic.AddMagic(incomes[3]);
+        publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold += incomes[0]);
+        publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers += incomes[1]);
+        publicPlayerAttributes.CmdSetPriests(publicPlayerAttributes.PlayerPriests += incomes[2]);
+        tierMagic.AddMagic(incomes[3]); UpdateMagicPublicVariables();
         shovel_count += incomes[4];
         UpdateResourceText();
     }
@@ -205,7 +213,7 @@ public class Player : MonoBehaviour {
             case Building.Building_Type.Temple:
                 temp = faction.Get_cost_build_sanctuary(); break; 
         }
-        if (money_count - temp[0] >= 0 && worker_count - temp[1] >= 0) { return true; }
+        if (publicPlayerAttributes.PlayerGold - temp[0] >= 0 && publicPlayerAttributes.PlayerWorkers - temp[1] >= 0) { return true; }
         return false;
     }
 
@@ -219,7 +227,7 @@ public class Player : MonoBehaviour {
         int distance = Terrain.GetDistance(target, tile);
 
         //If player has either enough shovels or has enough resources to buy shovels
-        if (distance <= shovel_count || distance-shovel_count * faction.Get_Cost_Terraform(current_upgrade_terraform).Worker <= worker_count)
+        if (distance <= shovel_count || distance-shovel_count * faction.Get_Cost_Terraform(current_upgrade_terraform).Worker <= publicPlayerAttributes.PlayerWorkers)
         {
             return true;
         }
@@ -248,7 +256,7 @@ public class Player : MonoBehaviour {
             } 
         }
 
-        ui.UpdatePoints(Points);
+        ui.UpdatePoints(publicPlayerAttributes.PlayerPoints);
     }
 
     public void Build(Building.Building_Type bt)
@@ -256,41 +264,41 @@ public class Player : MonoBehaviour {
         switch (bt)
         {
             case Building.Building_Type.Dwelling:
-                money_count = money_count - faction.Get_cost_build_dwelling()[0];
-                worker_count = worker_count - faction.Get_cost_build_dwelling()[1];
+                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.Get_cost_build_dwelling()[0]);
+                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.Get_cost_build_dwelling()[1]);
                 current_dwelling++;
                 break;
             case Building.Building_Type.Trading_Post:
                 //First calculate resources and all that
-                money_count = money_count - faction.Get_cost_build_TP()[0];
-                worker_count = worker_count - faction.Get_cost_build_TP()[1];
-                //Then update UI for building which gained another of itself
+                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.Get_cost_build_TP()[0]);
+                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.Get_cost_build_TP()[1]);
+                //Then update UI to display remaining buildings of the type that increased. So when a player builds a TP they regain a dwelling.
                 ui.DisplayRemaining(Building.Building_Type.Dwelling, Get_Remaining_Index(Building.Building_Type.Dwelling));
                 current_tp++; current_dwelling--;
                 break;
             case Building.Building_Type.Stronghold:
-                money_count = money_count - faction.Get_cost_build_stronghold()[0];
-                worker_count = worker_count - faction.Get_cost_build_stronghold()[1];
+                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.Get_cost_build_stronghold()[0]);
+                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.Get_cost_build_stronghold()[1]);
                 ui.DisplayRemaining(Building.Building_Type.Trading_Post, Get_Remaining_Index(Building.Building_Type.Trading_Post));
                 current_fortress++; current_tp--;
                 CheckPoints(PointBonus.Action_Type.BuildT3); //Special point bonus
                 break;
             case Building.Building_Type.Temple:
-                money_count = money_count - faction.Get_cost_build_temple()[0];
-                worker_count = worker_count - faction.Get_cost_build_temple()[1];
+                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.Get_cost_build_temple()[0]);
+                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.Get_cost_build_temple()[1]);
                 ui.DisplayRemaining(Building.Building_Type.Trading_Post, Get_Remaining_Index(Building.Building_Type.Trading_Post));
                 current_temple++; current_tp--;
                 break;
             case Building.Building_Type.Sanctuary:
-                money_count = money_count - faction.Get_cost_build_sanctuary()[0];
-                worker_count = worker_count - faction.Get_cost_build_sanctuary()[1];
+                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.Get_cost_build_sanctuary()[0]);
+                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.Get_cost_build_sanctuary()[1]);
                 ui.DisplayRemaining(Building.Building_Type.Temple, Get_Remaining_Index(Building.Building_Type.Temple));
                 current_sanctuary++; current_temple--;
                 CheckPoints(PointBonus.Action_Type.BuildT3); //Special point bonus
                 break;
         }
         CheckPoints(PointBonus.MapBuildingToAction(bt)); //Check if we gained any points#
-        ui.UpdatePoints(Points);
+        ui.UpdatePoints(publicPlayerAttributes.PlayerPoints);
 
         //Finally update UI for building which is losing one of itself
         ui.DisplayRemaining(bt, Get_Remaining_Index(bt));
@@ -312,7 +320,7 @@ public class Player : MonoBehaviour {
 
     internal void AddSinglePointValue(int points)
     {
-        Points += points;
+        publicPlayerAttributes.CmdSetPoints(publicPlayerAttributes.PlayerPoints += points);
         UpdateResourceText();
     }
 
@@ -361,7 +369,10 @@ public class Player : MonoBehaviour {
     {
         SingleIncome cost = faction.cost_upgrade_shipping;
         //First check if it can be done
-        if (money_count >= cost.Gold && worker_count >= cost.Worker && priest_count >= cost.Priest && tier_magic.GetTiers()[2] >= cost.Magic && shipping != 4)//and its not at max shipping
+        if (publicPlayerAttributes.PlayerGold >= cost.Gold 
+            && publicPlayerAttributes.PlayerWorkers >= cost.Worker 
+            && publicPlayerAttributes.PlayerPriests >= cost.Priest 
+            && tierMagic.GetTiers()[2] >= cost.Magic && shipping != 4)//and its not at max shipping
         {
             AddSingleIncome(cost.Reciprocal());
             shipping++;
@@ -374,7 +385,11 @@ public class Player : MonoBehaviour {
     {
         SingleIncome cost = faction.cost_upgrade_terraforming;
         //First check if it can be done
-        if (money_count >= cost.Gold && worker_count >= cost.Worker && priest_count >= cost.Priest && tier_magic.GetTiers()[2] >= cost.Magic && !faction.Max_Upgrade_Terraform(current_upgrade_terraform))//and its not at max shipping
+        if (publicPlayerAttributes.PlayerGold >= cost.Gold 
+            && publicPlayerAttributes.PlayerWorkers >= cost.Worker 
+            && publicPlayerAttributes.PlayerPriests >= cost.Priest 
+            && tierMagic.GetTiers()[2] >= cost.Magic 
+            && !faction.Max_Upgrade_Terraform(current_upgrade_terraform))//and its not at max shipping
         {
             AddSingleIncome(cost.Reciprocal());
             current_upgrade_terraform++;
@@ -391,18 +406,18 @@ public class Player : MonoBehaviour {
     //Spells
     public bool CheckCanCastSpell(Spell s)
     {
-        return tier_magic.GetTiers()[2] >= s.GetCost();
+        return tierMagic.GetTiers()[2] >= s.GetCost();
     }
 
     public void CastSpell(Spell s)
     {
-        tier_magic.UseSpell(s.GetCost());
+        tierMagic.UseSpell(s.GetCost()); UpdateMagicPublicVariables();
         AddSingleIncome(s.GetIncome());
     }
 
     public void BurnMagic()
     {
-        tier_magic.BurnMagic(1);
+        tierMagic.BurnMagic(1); UpdateMagicPublicVariables();
         UpdateResourceText();
     }
 
@@ -425,13 +440,13 @@ public class Player : MonoBehaviour {
     //Points
     public void CheckPoints(PointBonus.Action_Type at_)
     {
-        Points += pk.GetPointBonus(at_);
+        publicPlayerAttributes.CmdSetPoints(publicPlayerAttributes.PlayerPoints += pk.GetPointBonus(at_));
     }
     public void UpdateResourceText()
     {
-        ui.UpdateResourceText(new int[] { money_count, worker_count, priest_count, shovel_count }, new int[] { money_income, worker_income, priest_income});
-        ui.UpdateMagicTiers(tier_magic.GetTiers());
-        ui.UpdatePoints(Points);
+        ui.UpdateResourceText(new int[] { publicPlayerAttributes.PlayerGold, publicPlayerAttributes.PlayerWorkers, publicPlayerAttributes.PlayerPriests, shovel_count }, new int[] { money_income, worker_income, priest_income});
+        ui.UpdateMagicTiers(tierMagic.GetTiers());
+        ui.UpdatePoints(publicPlayerAttributes.PlayerPoints);
     }
     public void AddPointBonus(PointBonus pb_, bool temporary)
     {
@@ -467,7 +482,7 @@ public class Player : MonoBehaviour {
                 konkai_points += GetNoBuildings(PointBonus.MapActionToBuilding(pb.GetActionType())) * pb.pointBonus;
             }
         }
-        Points += konkai_points;
+        publicPlayerAttributes.CmdSetPoints(publicPlayerAttributes.PlayerPoints += konkai_points);
     }
 
     //End Turn and round
@@ -494,10 +509,10 @@ public class Player : MonoBehaviour {
         //First we calculate it, just in case it changed
         CalculateIncome();
         //Then we add increase our counts by the income amounts
-        money_count += money_income;
-        worker_count += worker_income;
-        priest_count += priest_income;
-        tier_magic.AddMagic(magic_income);
+        publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold += money_income);
+        publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers += worker_income);
+        publicPlayerAttributes.CmdSetPriests(publicPlayerAttributes.PlayerPriests += priest_income);
+        tierMagic.AddMagic(magic_income); UpdateMagicPublicVariables();
 
         //Then update the texts
         UpdateResourceText();

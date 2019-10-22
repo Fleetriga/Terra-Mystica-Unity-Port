@@ -24,7 +24,7 @@ public class DropDownMenu : NetworkBehaviour, IPointerEnterHandler, IPointerExit
 
     public void ChangeTextOn(int faction)
     {
-        Cmd_ChangeText(player_owner.Set_Faction((Faction.Faction_Type)faction));
+        Cmd_ChangeText(player_owner.Set_Faction((Faction.FactionType)faction));
     }
 
     [Command]
