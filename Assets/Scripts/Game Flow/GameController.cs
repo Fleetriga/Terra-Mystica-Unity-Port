@@ -25,6 +25,9 @@ public class GameController : MonoBehaviour {
     bool endTurnOrBuild;
     bool favourTileAvailable;
 
+    //Throwaway var for sync issues
+    bool appeared;
+
     // Use this for initialization
     public void StartGame() {
         GameObject ui_holder = GameObject.Find("UI");
@@ -67,6 +70,7 @@ public class GameController : MonoBehaviour {
     void Update()
     {
         if (turnController.ReactToPhaseChange && CheckLocalTurn()) { ReactToPhaseChange(); }
+        if (turnController.CurrentPhase == 4 && !appeared) { networkedUI.DisEnableRoundBonuses(true); roundBonusManager.AppearRoundBonuses(); appeared = true; }
 
         //DEBUG OPTION TO SHOW NEIGHBOURS OF TILE T
         if (Input.GetKeyDown(KeyCode.P)) { global.DebugRAISENEIGHBOURS = true; }
@@ -117,8 +121,8 @@ public class GameController : MonoBehaviour {
     {
         switch (turnController.CurrentPhase)
         {
-            case 2: if (localPlayer.faction.factionType != (Faction.FactionType)3) { RetirePlayer(); }; break; //Nomads special extra dwelling placement
-            case 3: if (localPlayer.faction.factionType != (Faction.FactionType)4) { RetirePlayer(); }; break; //Chaos Magicians first dwelling placement
+            case 2: if (localPlayer.faction.factionType != (Faction.FactionType)3) { RetirePlayer();} break; //Nomads special extra dwelling placement
+            case 3: if (localPlayer.faction.factionType != (Faction.FactionType)4) { RetirePlayer();} break; //Chaos Magicians first dwelling placement
             case 4: networkedUI.DisEnableRoundBonuses(true); roundBonusManager.AppearRoundBonuses(); break; //Show Round bonuses
             case 5: RoundIncomePhase(); break; //Force income round to go.
             case 6: SetUpActionPhase(); break; //Force action phase prerequisites
@@ -384,6 +388,7 @@ public class GameController : MonoBehaviour {
         {
             networkedUI.PanelInteractivityEnDisable(networkedUI.favourButtons, true);
             networkedUI.DisEnableFavourTiles();
+            favourTileAvailable = true;
             endTurn = false;
         }
 
@@ -466,6 +471,8 @@ public class GameController : MonoBehaviour {
 
     public void TakeFavourTile(int tracktier)
     {
+        if (!favourTileAvailable) { return; }
+
         int[] temp = CultController.ParseInt(tracktier); //Parse e.g. 12 into track 1 tier 2
         int track = temp[0]-1; int tier = temp[1];
 
@@ -491,16 +498,25 @@ public class GameController : MonoBehaviour {
             AddCultIncome(wt.Get_CultIncome());
 
             networkedUI.PanelInteractivityEnDisable(networkedUI.favourButtons, false);
+            networkedUI.DisEnableFavourTiles();
 
             localPlayer.EndTurn();
-        } //If no options are picked for whatever reason return, otherwise send the data to the server
-        else { return; } localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendPickedFavourData(track, tier);
+        } 
+        
+        //If no options are picked for whatever reason return, otherwise send the data to the server and disallow further picking of favours
+        else { return; }
+
+        localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendPickedFavourData(track, tier);
+        favourTileAvailable = false;
     }
 
     public void EndTurnRetire()
     {
-        if (endTurnOrBuild) { localPlayer.EndTurn(); endTurnOrBuild = false; } //If the player gives up their chance to do 2 things on one turn
-        else { networkedUI.DisEnableRoundBonuses(true); roundBonusManager.AppearRoundBonuses(); } //Else they want to retire. So appear the round bonuses and let them choose one.
+        if (turnController.CurrentPhase == 6 && CheckLocalTurn())
+        {
+            if (endTurnOrBuild) { localPlayer.EndTurn(); endTurnOrBuild = false; } //If the player gives up their chance to do 2 things on one turn
+            else { networkedUI.DisEnableRoundBonuses(true); roundBonusManager.AppearRoundBonuses(); } //Else they want to retire. So appear the round bonuses and let them choose one.
+        }
     }
 
     public void DebugAddMagic()

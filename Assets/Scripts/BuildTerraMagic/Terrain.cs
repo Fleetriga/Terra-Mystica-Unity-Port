@@ -54,4 +54,9 @@ public class Terrain {
     {
         return (int)t == (int)t2;
     }
+
+    public override string ToString()
+    {
+        return t_type.ToString();
+    }
 }

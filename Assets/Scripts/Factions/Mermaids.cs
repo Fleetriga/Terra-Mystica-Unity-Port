@@ -29,8 +29,8 @@ public class Mermaids : Faction {
 
         starting_dwellings = 2;
 
-        Starting_gold = 50;
-        Starting_worker = 50;
+        Starting_gold = 15;
+        Starting_worker = 3;
         Starting_priest = 0;
         Starting_shovels = 0;
 

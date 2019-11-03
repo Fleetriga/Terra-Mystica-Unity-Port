@@ -21,7 +21,7 @@ public class TestFaction : Faction
 
         magic_default = new Magic(7, 5, 0);
 
-        habitat = Terrain.TerrainType.Desert;
+        habitat = Terrain.TerrainType.Plains;
 
         max_upgrade_terraform = 3;
 

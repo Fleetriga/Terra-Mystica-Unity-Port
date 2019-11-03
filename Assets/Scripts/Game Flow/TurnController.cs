@@ -17,6 +17,9 @@ public class TurnController : NetworkBehaviour {
     public int CurrentPlayerID;
     [SyncVar]
     public int CurrentRoundNumber;
+    [SyncVar]
+    public int PlayersLeftThisPhase; //used when a single player is left in the game during this phase
+
     public bool ReactToPhaseChange; //Networked via RPC so players can unflag this when they react
 
 
@@ -84,6 +87,7 @@ public class TurnController : NetworkBehaviour {
         nextRoundTurnOrder = new List<int>();
 
         SetCurrentPhaseTurnOrder();
+        Cmd_SetPlayersLeftThisPhase(currentPhaseTurnOrder.Count);
         currentPlayerIndex = 0;
     }
 
@@ -99,12 +103,22 @@ public class TurnController : NetworkBehaviour {
 
     public void NextPlayer()
     {
-        currentPlayerIndex = (currentPlayerIndex + 1) % currentRoundTurnOrder.Count;
+        currentPlayerIndex = (currentPlayerIndex + 1) % currentPhaseTurnOrder.Count;
     }
     public void RetirePlayer()
     {
         nextRoundTurnOrder.Add(currentPhaseTurnOrder[currentPlayerIndex]); //adds to the end of the next round order. This correctly dictates the turn order for next round.
         currentPhaseTurnOrder.RemoveAt(currentPlayerIndex);
+
+        //Number of players reduced by one. Following code fixes CurrentPlayerIndex
+        if(currentPhaseTurnOrder.Count > 0)
+        {
+            currentPlayerIndex = currentPlayerIndex % currentPhaseTurnOrder.Count;
+        }
+
+        //Allow a person to go on when he's the only guy left by resetting currentPlayerIndex
+        Cmd_SetPlayersLeftThisPhase(currentPhaseTurnOrder.Count);
+
 
         if (currentPhaseTurnOrder.Count == 0) { SetPhaseToNextPhase(); } //Go to next phase when no one is left
     }
@@ -172,5 +186,11 @@ public class TurnController : NetworkBehaviour {
     {
         ReactToPhaseChange = true;
     }
+    [Command]
+    void Cmd_SetPlayersLeftThisPhase(int count)
+    {
+        PlayersLeftThisPhase = count;
+    }
+
 
 }

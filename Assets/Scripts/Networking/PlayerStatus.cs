@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Mirror;
-using System;
 
 public class PlayerStatus : NetworkBehaviour
 {
@@ -31,7 +28,8 @@ public class PlayerStatus : NetworkBehaviour
         {
             Cmd_SetPlayerStatus(PlayerStatusEnum.Standby);
         }
-        if (NetworkServer.connections.Count == 1 && CurrentPlayerStatus != PlayerStatusEnum.Retiring) //Single player should always be the one taking his turn. However if he's trying to retire bloody let him.
+        if (turnC.PlayersLeftThisPhase == 1 && CurrentPlayerStatus == PlayerStatusEnum.EndingTurn && turnC.CurrentPlayerID == GetComponent<PlayerNetworked>().PlayerID) 
+            //Single player should always be the one taking his turn. However if he's trying to retire bloody let him.
         {
             Cmd_SetPlayerStatus(PlayerStatusEnum.TakingTurn);
         }

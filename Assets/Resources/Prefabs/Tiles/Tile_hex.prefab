@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4879933172200880}
   - component: {fileID: 114993532450520280}
   - component: {fileID: 54996809240820136}
+  - component: {fileID: 252856850212505335}
   m_Layer: 0
   m_Name: Tile_hex
   m_TagString: Untagged
@@ -58,7 +59,7 @@ MonoBehaviour:
   - {fileID: 2941335303250449048, guid: 7319511be2475fe4eaed468be143d1ce, type: 3}
   - {fileID: 4012694280747435471, guid: 762583a5cf2e2c04f89e8649f5db1cae, type: 3}
   - {fileID: 6081202286769583454, guid: 8e0e2325489a726408b13605ca2d7eb0, type: 3}
-  - {fileID: 0}
+  - {fileID: 3934930637169969644, guid: f108a5e3688d8f4468e99bef0695d03f, type: 3}
   - {fileID: 0}
   - {fileID: 3352584562412447207, guid: adbf75a3a4c44b342843efc6842617d8, type: 3}
   starting_terrain: 2
@@ -88,6 +89,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &252856850212505335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1633857006939426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9317c2488c73e70408a9d7dd811afdb2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tooltipType: {fileID: 11400000, guid: c3807b58d30f86242bfdd262cab79c1b, type: 2}
+  popUp: {fileID: 0}
 --- !u!64 &7731745441377470119
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -171,11 +186,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 3834739505127760400}
     m_Modifications:
-    - target: {fileID: -927199367670048503, guid: 634f4f4780193064aa09ffa4ed5361fb,
-        type: 3}
-      propertyPath: m_Name
-      value: Hexagon (1)
-      objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 634f4f4780193064aa09ffa4ed5361fb,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -230,6 +240,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: 634f4f4780193064aa09ffa4ed5361fb,
+        type: 3}
+      propertyPath: m_Name
+      value: Hexagon (1)
       objectReference: {fileID: 0}
     - target: {fileID: -1504981713932161579, guid: 634f4f4780193064aa09ffa4ed5361fb,
         type: 3}

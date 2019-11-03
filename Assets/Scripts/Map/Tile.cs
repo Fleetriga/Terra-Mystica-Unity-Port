@@ -57,7 +57,7 @@ public class Tile : MonoBehaviour {
             case Terrain.TerrainType.Mountain: ReplaceTerrainModel(t_type); break;
             case Terrain.TerrainType.Wasteland: ReplaceTerrainModel(t_type); break;
             case Terrain.TerrainType.Desert: ReplaceTerrainModel(t_type); break;
-            case Terrain.TerrainType.Plains: ReplaceMaterialViaRenderer(t_type); break;
+            case Terrain.TerrainType.Plains: ReplaceTerrainModel(t_type); break;
             case Terrain.TerrainType.Swamp: ReplaceMaterialViaRenderer(t_type); break;
             case Terrain.TerrainType.Lakes: ReplaceTerrainModel(t_type); break;
         }
