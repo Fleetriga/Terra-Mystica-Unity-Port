@@ -78,10 +78,6 @@ public class GameController : MonoBehaviour {
 
     void SetUpTracks()
     {
-        progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(0), TracksInterface.ProgressTrackRef.Cult_fire, localPlayer.GetCultData().GetLevels()[0]);
-        progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(1), TracksInterface.ProgressTrackRef.Cult_water, localPlayer.GetCultData().GetLevels()[1]);
-        progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(2), TracksInterface.ProgressTrackRef.Cult_earth, localPlayer.GetCultData().GetLevels()[2]);
-        progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(3), TracksInterface.ProgressTrackRef.Cult_air, localPlayer.GetCultData().GetLevels()[3]);
         progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(4), TracksInterface.ProgressTrackRef.Shipping, 0);
         progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(5), TracksInterface.ProgressTrackRef.Terraform, 0);
     }
@@ -92,13 +88,13 @@ public class GameController : MonoBehaviour {
         {
             if (localPlayer.UpgradeShipping())
             {
-                progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Shipping, localPlayer.GetShipping(), localPlayer.GetID());
+                progressTrackManager.AddProgressToTrack(TracksInterface.ProgressTrackRef.Shipping, localPlayer.GetShipping(), localPlayer.GetID());
             }
         }
         else {
             if (localPlayer.UpgradeTerraforming())
             {
-                progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Terraform, localPlayer.Current_Upgrade_Terraform(), localPlayer.GetID());
+                progressTrackManager.AddProgressToTrack(TracksInterface.ProgressTrackRef.Terraform, localPlayer.Current_Upgrade_Terraform(), localPlayer.GetID());
             }
         }
     }
@@ -457,10 +453,6 @@ public class GameController : MonoBehaviour {
         if (ci_ != null)
         {
             localPlayer.AddSingleIncome(new SingleIncome(0,0,0, cultController.AddToTrackLevel(ci_, localPlayer),0)); //Add to the cult track and then add any owed magic to player
-            progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Cult_fire, localPlayer.GetCultData().GetLevels()[0], localPlayer.GetID());
-            progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Cult_water, localPlayer.GetCultData().GetLevels()[1], localPlayer.GetID());
-            progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Cult_earth, localPlayer.GetCultData().GetLevels()[2], localPlayer.GetID());
-            progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Cult_air, localPlayer.GetCultData().GetLevels()[3], localPlayer.GetID());
         }
     }
 

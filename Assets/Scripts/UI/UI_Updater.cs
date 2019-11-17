@@ -87,7 +87,7 @@ public class UI_Updater : MonoBehaviour {
         sanctuaryWorkerCost.text = san[1].ToString();
     }
     
-    public void UpdatePlayerCultTrack(CultData cd)
+    public void UpdatePlayerCultText(CultData cd)
     {
         fireCult.text = cd.GetLevels()[0].ToString();
         waterCult.text = cd.GetLevels()[1].ToString();

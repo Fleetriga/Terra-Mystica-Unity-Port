@@ -6,6 +6,6 @@ public class Send_To_DropDownMenu : MonoBehaviour
 {
     public void SendToMenu(int new_faction)
     {
-        transform.parent.parent.GetComponent<DropDownMenu>().ChangeTextOn(new_faction);
+        transform.parent.parent.GetComponent<DropDownMenu>().OnChangeText(new_faction);
     }
 }

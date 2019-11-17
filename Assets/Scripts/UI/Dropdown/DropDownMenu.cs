@@ -22,9 +22,9 @@ public class DropDownMenu : NetworkBehaviour, IPointerEnterHandler, IPointerExit
         go.GetComponent<RectTransform>().localPosition = new Vector2(-8, -22);
     }
 
-    public void ChangeTextOn(int faction)
+    public void OnChangeText(int faction)
     {
-        Cmd_ChangeText(player_owner.Set_Faction((Faction.FactionType)faction));
+        Cmd_ChangeText(player_owner.SetFaction((Faction.FactionType)faction));
     }
 
     [Command]

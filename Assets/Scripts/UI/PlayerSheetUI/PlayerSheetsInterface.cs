@@ -21,7 +21,7 @@ public class PlayerSheetsInterface : MonoBehaviour
 
     void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
     {
-        players = GameObject.FindGameObjectsWithTag("Player_Networked_Object");
+        players = GameObject.FindGameObjectsWithTag("NetworkedPlayerObjects");
         CreateSheets();
     }
 

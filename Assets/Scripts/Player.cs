@@ -88,11 +88,12 @@ public class Player : MonoBehaviour {
 
         //Starting cult tracks
         cd = new CultData(faction.Get_Default_CultData());
+        publicPlayerAttributes.CmdSetCultStandings(cd.GetLevels());
 
         //Setup UI to start with
         ui = GameObject.Find("UI").GetComponent<UI_Updater>();
         ui.UpdatePlayerBuildingCosts(faction.Get_cost_build_dwelling(), faction.Get_cost_build_TP(), faction.Get_cost_build_temple(), faction.Get_cost_build_sanctuary(), faction.Get_cost_build_stronghold());
-        ui.UpdatePlayerCultTrack(cd);
+        ui.UpdatePlayerCultText(cd);
 
         //Starting resources and income and update UI resources/income
         publicPlayerAttributes.CmdSetGold(faction.Starting_gold);
@@ -425,7 +426,8 @@ public class Player : MonoBehaviour {
     public bool AddToTrackLevel(CultIncome income, int[] max)
     {
         bool temp = cd.Add_To_Track_Level(income, max);
-        ui.UpdatePlayerCultTrack(cd);
+        ui.UpdatePlayerCultText(cd);
+        publicPlayerAttributes.CmdSetCultStandings(cd.GetLevels());
         return temp;
     }
     public CultData GetCultData()

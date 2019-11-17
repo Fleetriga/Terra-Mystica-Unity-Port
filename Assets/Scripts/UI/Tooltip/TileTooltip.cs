@@ -57,8 +57,11 @@ public class TileTooltip : TooltipUI
 
     private void OnMouseExit()
     {
-        hoveredOver = false;
-        popUp.HideInfo();
+        if (!EventSystem.current.IsPointerOverGameObject())
+        {
+            hoveredOver = false;
+            popUp.HideInfo();
+        }
     }
 
 

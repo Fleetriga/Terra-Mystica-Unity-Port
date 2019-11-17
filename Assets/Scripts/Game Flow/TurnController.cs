@@ -131,7 +131,7 @@ public class TurnController : NetworkBehaviour {
 
     void CollectPlayerStatuses()
     {
-        playersStatuses = GameObject.FindGameObjectsWithTag("Player_Networked_Object");
+        playersStatuses = GameObject.FindGameObjectsWithTag("NetworkedPlayerObjects");
     }
 
     //Returns true if the current player has changed

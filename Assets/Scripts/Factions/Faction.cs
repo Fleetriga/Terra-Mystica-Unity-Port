@@ -5,7 +5,7 @@ using UnityEngine;
 
 public abstract class Faction {
 
-    public enum FactionType { Mermaids, Test};
+    public enum FactionType { Mermaids, Test, NOFACTION};
 
     //***********************************Other faction variables
     public FactionType factionType;

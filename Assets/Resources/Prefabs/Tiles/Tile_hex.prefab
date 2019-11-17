@@ -55,12 +55,12 @@ MonoBehaviour:
   - {fileID: 2100000, guid: fad657d6bc38a4542953cbb1a97408da, type: 2}
   - {fileID: 2100000, guid: f6227767f63b8124ebf26bd114889677, type: 2}
   terrainModels:
-  - {fileID: 0}
+  - {fileID: 513424738439875302, guid: 1b87d467744845e4e9724d2157536417, type: 3}
   - {fileID: 2941335303250449048, guid: 7319511be2475fe4eaed468be143d1ce, type: 3}
   - {fileID: 4012694280747435471, guid: 762583a5cf2e2c04f89e8649f5db1cae, type: 3}
   - {fileID: 6081202286769583454, guid: 8e0e2325489a726408b13605ca2d7eb0, type: 3}
   - {fileID: 3934930637169969644, guid: f108a5e3688d8f4468e99bef0695d03f, type: 3}
-  - {fileID: 0}
+  - {fileID: 135601160134770497, guid: e5c30d2afc781904181c1b5aa03afa58, type: 3}
   - {fileID: 3352584562412447207, guid: adbf75a3a4c44b342843efc6842617d8, type: 3}
   starting_terrain: 2
   x: 0
@@ -186,6 +186,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 3834739505127760400}
     m_Modifications:
+    - target: {fileID: -927199367670048503, guid: 634f4f4780193064aa09ffa4ed5361fb,
+        type: 3}
+      propertyPath: m_Name
+      value: Hexagon (1)
+      objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 634f4f4780193064aa09ffa4ed5361fb,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -240,11 +245,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -927199367670048503, guid: 634f4f4780193064aa09ffa4ed5361fb,
-        type: 3}
-      propertyPath: m_Name
-      value: Hexagon (1)
       objectReference: {fileID: 0}
     - target: {fileID: -1504981713932161579, guid: 634f4f4780193064aa09ffa4ed5361fb,
         type: 3}

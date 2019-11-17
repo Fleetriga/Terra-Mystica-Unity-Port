@@ -16,7 +16,7 @@ public class TurnSimulator : MonoBehaviour
 
     void Start()
     {
-        players = GameObject.FindGameObjectsWithTag("Player_Networked_Object");
+        players = GameObject.FindGameObjectsWithTag("NetworkedPlayerObjects");
         townFoundManager = GameObject.Find("Controller").GetComponent<TownFoundingBonusManager>();
         wonderController = GameObject.Find("Controller").GetComponent<WonderController>();
         magicController = GameObject.Find("Controller").GetComponent<MagicController>();

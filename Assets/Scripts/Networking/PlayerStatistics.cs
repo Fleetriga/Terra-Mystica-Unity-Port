@@ -25,6 +25,14 @@ public class PlayerStatistics : NetworkBehaviour
     public int tierTwo;
     [SyncVar(hook = nameof(PlayerSheetTierThreeMagicUpdate))]
     public int tierThree;
+    //Cults
+    [SerializeField] [SyncVar] int fireCult;
+    [SerializeField] [SyncVar] int waterCult;
+    [SerializeField] [SyncVar] int earthCult;
+    [SerializeField] [SyncVar] int airCult;
+
+    public int[] CultStanding { get { return new int[] { fireCult, waterCult, earthCult, airCult }; } }
+
 
     void OnEnable()
     {
@@ -40,6 +48,7 @@ public class PlayerStatistics : NetworkBehaviour
         playerSheetUpdater = GameObject.Find("UI").GetComponent<PlayerSheetsInterface>();
     }
 
+    #region SyncVar Setters
     //Setting the syncvars on the server
     [Command]
     public void CmdSetGold(int gold)
@@ -68,7 +77,17 @@ public class PlayerStatistics : NetworkBehaviour
         tierTwo = magics[1];
         tierThree = magics[2];
     }
+    [Command]
+    public void CmdSetCultStandings(int[] cultData)
+    {
+        fireCult = cultData[0];
+        waterCult = cultData[1];
+        earthCult = cultData[2];
+        airCult = cultData[3];
+    }
+    #endregion
 
+    #region PlayerSheet Updaters
     //From here are hook methods. They tell the UI to update with the new values.
     void PlayerSheetGoldUpdate(int value)
     {
@@ -112,4 +131,5 @@ public class PlayerStatistics : NetworkBehaviour
         if (playerSheetUpdater == null) { return; }
         playerSheetUpdater.MagicUpdate(GetComponent<PlayerNetworked>().PlayerID);
     }
+    #endregion
 }

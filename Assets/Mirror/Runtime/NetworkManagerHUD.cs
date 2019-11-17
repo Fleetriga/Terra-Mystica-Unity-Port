@@ -20,7 +20,7 @@ namespace Mirror
         /// <summary>
         /// Whether to show the default control HUD at runtime.
         /// </summary>
-        public bool showGUI = true;
+        public bool showGUI = false;
 
         /// <summary>
         /// The horizontal offset in pixels to draw the HUD runtime GUI at.

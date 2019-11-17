@@ -51,14 +51,14 @@ public class Tile : MonoBehaviour {
 
     public void Terraform(Terrain.TerrainType t_type)
     { 
-        switch (t_type)
+        switch (t_type) //Switch until all models are created
         {
-            case Terrain.TerrainType.Forest: ReplaceMaterialViaRenderer(t_type); break;
+            case Terrain.TerrainType.Forest: ReplaceTerrainModel(t_type); break;
             case Terrain.TerrainType.Mountain: ReplaceTerrainModel(t_type); break;
             case Terrain.TerrainType.Wasteland: ReplaceTerrainModel(t_type); break;
             case Terrain.TerrainType.Desert: ReplaceTerrainModel(t_type); break;
             case Terrain.TerrainType.Plains: ReplaceTerrainModel(t_type); break;
-            case Terrain.TerrainType.Swamp: ReplaceMaterialViaRenderer(t_type); break;
+            case Terrain.TerrainType.Swamp: ReplaceTerrainModel(t_type); break;
             case Terrain.TerrainType.Lakes: ReplaceTerrainModel(t_type); break;
         }
 
