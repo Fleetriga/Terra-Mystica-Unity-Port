@@ -3,7 +3,8 @@ using UnityEngine.UI;
 
 public class PlayerPiece : MonoBehaviour {
 
-    BinUI currentBin;
+    public BinUI CurrentBin { get; set; }
+    public int PlayerID { get { return playerID; } }
     int playerID;
 
     public void SetUp(int playerID_, Sprite rep_)
@@ -14,16 +15,6 @@ public class PlayerPiece : MonoBehaviour {
 
     public void SetCurrentBin(BinUI bin)
     {
-        currentBin = bin;
-    }
-
-    public BinUI Get_BinUI()
-    {
-        return currentBin;
-    }
-
-    public int Get_PlayerID()
-    {
-        return playerID;
+        CurrentBin = bin;
     }
 }

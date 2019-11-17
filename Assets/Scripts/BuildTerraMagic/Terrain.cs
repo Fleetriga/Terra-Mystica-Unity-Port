@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Terrain {
 
-    public enum TerrainType { Forest = 0, Mountain = 1, Rocklands = 2, Desert = 3, Farmland = 4, Badlands = 5, Swamp = 6, NOTHING=7 };
+    public enum TerrainType { Forest = 0, Mountain = 1, Wasteland = 2, Desert = 3, Plains = 4, Swamp = 5, Lakes = 6, NOTHING=7 };
     public enum Clockwise_Value { Clockwise = 1, AntiClockwise =-1 };
 
     TerrainType t_type;
@@ -53,5 +53,10 @@ public class Terrain {
     public static bool TerrainEquals(TerrainType t, TerrainType t2)
     {
         return (int)t == (int)t2;
+    }
+
+    public override string ToString()
+    {
+        return t_type.ToString();
     }
 }

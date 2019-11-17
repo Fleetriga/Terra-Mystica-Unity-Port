@@ -13,40 +13,39 @@ public class GameController : MonoBehaviour {
     TracksInterface progressTrackManager;
     RoundBonusManager roundBonusManager;
     RoundEndBonusManager roundEndBonusManager;
-    Global_Flags global;
+    GlobalFlags global;
+    TurnController turnController;
 
     Player localPlayer; //Found later
-
-
 
     public Board board;
     public AbilityManager am;
     public BridgeManager bm;
 
-    public int phase;
-    public int round;
     bool endTurnOrBuild;
+    bool favourTileAvailable;
+
+    //Throwaway var for sync issues
+    bool appeared;
 
     // Use this for initialization
-    public void Start_Game() {
+    public void StartGame() {
         GameObject ui_holder = GameObject.Find("UI");
 
         //Find Component classes
         magicController = GetComponent<MagicController>();
         roundBonusManager = GetComponent<RoundBonusManager>();
-        global = GetComponent<Global_Flags>();
+        global = GetComponent<GlobalFlags>();
         networkedUI = ui_holder.GetComponent<Networked_UI_Updater>();
         progressTrackManager = ui_holder.GetComponent<TracksInterface>();
         townFoundManager = GetComponent<TownFoundingBonusManager>();
         wonderController = GetComponent<WonderController>();
         roundEndBonusManager = GetComponent<RoundEndBonusManager>();
+        turnController = GameObject.Find("TurnController(Clone)").GetComponent<TurnController>(); //Networked object so must be it's own game object separate from GameController.
 
         //Create component classes
         cultController = new CultController();
         
-        phase = 0;
-        round = 0;
-
         localPlayer = GameObject.FindWithTag("Player_Object").GetComponent<Player>();
 
         wonderController.SetUp();
@@ -60,12 +59,25 @@ public class GameController : MonoBehaviour {
         global.Set_Up();
     }
 
+    
+
+    //Checks if player can afford a certain price before going through with an action
+    public bool CheckPlayerCanAfford(SingleIncome price)
+    {
+        return localPlayer.CheckPlayerCanAfford(price);
+    }
+
+    void Update()
+    {
+        if (turnController.ReactToPhaseChange && CheckLocalTurn()) { ReactToPhaseChange(); }
+        if (turnController.CurrentPhase == 4 && !appeared) { networkedUI.DisEnableRoundBonuses(true); roundBonusManager.AppearRoundBonuses(); appeared = true; }
+
+        //DEBUG OPTION TO SHOW NEIGHBOURS OF TILE T
+        if (Input.GetKeyDown(KeyCode.P)) { global.DebugRAISENEIGHBOURS = true; }
+    }
+
     void SetUpTracks()
     {
-        progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(0), TracksInterface.ProgressTrackRef.Cult_fire, localPlayer.GetCultData().GetLevels()[0]);
-        progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(1), TracksInterface.ProgressTrackRef.Cult_water, localPlayer.GetCultData().GetLevels()[1]);
-        progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(2), TracksInterface.ProgressTrackRef.Cult_earth, localPlayer.GetCultData().GetLevels()[2]);
-        progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(3), TracksInterface.ProgressTrackRef.Cult_air, localPlayer.GetCultData().GetLevels()[3]);
         progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(4), TracksInterface.ProgressTrackRef.Shipping, 0);
         progressTrackManager.AddPieceToTrack(localPlayer.GetID(), localPlayer.GetPiece(5), TracksInterface.ProgressTrackRef.Terraform, 0);
     }
@@ -76,13 +88,13 @@ public class GameController : MonoBehaviour {
         {
             if (localPlayer.UpgradeShipping())
             {
-                progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Shipping, localPlayer.GetShipping(), localPlayer.GetID());
+                progressTrackManager.AddProgressToTrack(TracksInterface.ProgressTrackRef.Shipping, localPlayer.GetShipping(), localPlayer.GetID());
             }
         }
         else {
             if (localPlayer.UpgradeTerraforming())
             {
-                progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Terraform, localPlayer.Current_Upgrade_Terraform(), localPlayer.GetID());
+                progressTrackManager.AddProgressToTrack(TracksInterface.ProgressTrackRef.Terraform, localPlayer.Current_Upgrade_Terraform(), localPlayer.GetID());
             }
         }
     }
@@ -101,43 +113,45 @@ public class GameController : MonoBehaviour {
         }
     }
 
-    //Phase related Methods
-    void SetUpPhase()
+    void ReactToPhaseChange()
     {
-        global.ResetFlags(); //Reset flags before setting up a phase. Redundancy.
-        //Set up the next phase, moving UI elements and stuff
-        switch (phase)
+        switch (turnController.CurrentPhase)
         {
-            case 1: SetUpIncomePhase(); break;
-            case 2: SetUpRoundMain(); break;
-            case 3: SetUpRoundEnd(); break;
+            case 2: if (localPlayer.faction.factionType != (Faction.FactionType)3) { RetirePlayer();} break; //Nomads special extra dwelling placement
+            case 3: if (localPlayer.faction.factionType != (Faction.FactionType)4) { RetirePlayer();} break; //Chaos Magicians first dwelling placement
+            case 4: networkedUI.DisEnableRoundBonuses(true); roundBonusManager.AppearRoundBonuses(); break; //Show Round bonuses
+            case 5: RoundIncomePhase(); break; //Force income round to go.
+            case 6: SetUpActionPhase(); break; //Force action phase prerequisites
+            case 7: RoundEndPointsTally(); break; //Force end of round points tallying (for accumulative bonuses).
+            case 8: RoundEndCultTally(); roundEndBonusManager.GreyOutRoundEndBonus(turnController.CurrentRoundNumber); ; break; //Force tallying of cult points and allow players to free terraform/build with their bonus
         }
+        turnController.ReactToPhaseChange = false; //Once we have reacted to a phase change we dont want to react again so turn the bit off.
     }
 
-    void SetUpIncomePhase()
+    /* Methods underneath are fired when a new game phase starts. */
+    void SetUpActionPhase()
     {
-        networkedUI.DisEnableRoundBonuses(true);
-        roundBonusManager.AppearRoundBonuses(); //Show round bonuses 
+        localPlayer.AddPointBonus(roundEndBonusManager.GetRoundEndBonus(turnController.CurrentRoundNumber).RoundEndPointBonus, true);
+    }
+    void RoundIncomePhase()
+    {
         magicController.ResetWorldMagic();
-    }
+        localPlayer.IncreaseCountByIncome();
 
-    void SetUpRoundMain()
+        RetirePlayer();
+    }
+    void RoundEndPointsTally()
     {
-        roundBonusManager.ResetAvailableBonuses(); //Reset them for next round now.
-        localPlayer.AddPointBonus(roundEndBonusManager.GetRoundEndBonus(round).RoundEndPointBonus, true); //Get this phases RoundEndBonuses reactive point bonus
-        networkedUI.DisEnableRoundBonuses(false); //Then take them off the screen
-    }
+        localPlayer.CalculateAccumulativeBonuses();
+        localPlayer.ResetTemporaryPointBonuses(); //Reset temp bonuses so they dont get carried over
 
-    void SetUpRoundEnd()
+        RetirePlayer();
+    }
+    void RoundEndCultTally()
     {
-        localPlayer.AddSingleIncome(roundEndBonusManager.GetRoundEndBonus(round).GetTotalBouns(localPlayer.GetCultData()));
-        RemoveRoundBonusAbilities();
-        roundEndBonusManager.ResetBonuses();
-        round++;
-        phase = 1;
-        SetUpPhase(); //Temporary
+        localPlayer.AddSingleIncome(roundEndBonusManager.GetRoundEndBonus(turnController.CurrentRoundNumber).GetTotalBouns(localPlayer.GetCultData())); //Income side.
+        RetirePlayer();
     }
-
     void RemoveRoundBonusAbilities()
     {
         if (localPlayer.CurrentRoundBonus.Type == RoundBonusManager.RoundBonusType.OneCult_FourGold)
@@ -150,43 +164,45 @@ public class GameController : MonoBehaviour {
         }
     }
 
+    /* Methods underneath are fired when the player does something. They parse the actions of the player and decide how to react. */
     public void ParseFlags(Tile t)
     {
         if (!CheckLocalTurn())
         {
             return;
         }
-        switch (phase)
+        switch (turnController.CurrentPhase)
         {
-            case 0: ParseFlagsSetUp(t); break;
-            case 1: ParseFlagsRoundIncomePhase(); break;
-            case 2: ParseFlagsRoundMainPhase(t); break;
-            case 3: ParseFlagsRoundEnd(); break;
+            case 0: ParseFlagsInitialDwellings(t); break;
+            case 1: ParseFlagsInitialDwellings(t); break;
+            case 2: ParseFlagsInitialDwellings(t); break;
+            case 3: ParseFlagsInitialDwellings(t); break;
+            case 4: ParseFlagsRoundBonusPicking(); break;
+            case 5: RoundIncomePhase(); break;
+            case 6: ParseFlagsRoundActionPhase(t); break;
+            case 8: ParseFlagsRoundEndCultBonus(); break;
         }
     }
 
-    void ParseFlagsSetUp(Tile t) //phase 0
-    {
-        //If the building flag is set to dwelling AND the terrain matches the players habitat
-        if (Building.Equals(global.BuildFlag, Building.Building_Type.Dwelling) &&
-            t.GetTerrainType() == localPlayer.GetHabitat())
-        {
-            FreeBuild(global.BuildFlag, t);
-            localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendBuildData(t.GetCoordinates().GetXY(), global.BuildFlag);
-
-            if (localPlayer.GetRemainingStartingDwellings() <= 0) { phase = 1; RetirePlayer(); } //Next phase after set up is round income, phase 1
-            else {
-                localPlayer.EndTurn(); 
-            }
-        }
-
-        global.ResetFlags();
-    }
-
-    void ParseFlagsRoundIncomePhase() //phase 1 triggers for each player when they chose a bonus
+    void ParseFlagsRoundBonusPicking()
     {
         if (global.RoundBonusFlag != RoundBonusManager.RoundBonusType.NOTHING)
         {
+
+            //Tell other players so they can react to you picking. New and old bonus sent so old one can be put back into the pool.
+            localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendRoundBonusPicked(global.RoundBonusFlag);
+
+            //In case the player is picking a new bonus instead of his first one
+            if (localPlayer.CurrentRoundBonus != null)
+            {
+                localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendRoundBonusReturned(localPlayer.CurrentRoundBonus.Type);
+
+                //take away the bonus given from this rounds chosen bonus.
+                localPlayer.AddToNonBuildingIncome(localPlayer.CurrentRoundBonus.Round_Income.Reciprocal().IncomeAsArray());
+                RemoveRoundBonusAbilities();
+                roundEndBonusManager.ResetBonuses();
+            }
+
             //give player bonus income
             if (roundBonusManager.GetRoundBonus(global.RoundBonusFlag).Round_Income != null)
             {
@@ -197,7 +213,6 @@ public class GameController : MonoBehaviour {
             //If there's a point bonus
             if (roundBonusManager.GetRoundBonus(global.RoundBonusFlag).RoundPointbonus != null)
             {
-                
                 localPlayer.AddPointBonus(roundBonusManager.GetRoundBonus(global.RoundBonusFlag).RoundPointbonus, true); //It will sort itself out at the end since it's temporary
             }
 
@@ -206,21 +221,38 @@ public class GameController : MonoBehaviour {
             {
                 am.AddAbility<AbilityTerraform1>();
             }
-            if(global.RoundBonusFlag == RoundBonusManager.RoundBonusType.OneCult_FourGold)
+            if (global.RoundBonusFlag == RoundBonusManager.RoundBonusType.OneCult_FourGold)
             {
                 am.AddAbility<AbilityAddToCult>();
             }
-            
-            localPlayer.IncreaseCountByIncome();
 
-            localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendRoundBonusPicked(global.RoundBonusFlag); //Tell other players that 
+            networkedUI.DisEnableRoundBonuses(false); //Then take them off the screen
 
-            phase = 2; //Next phase after Income is Main game phase, phase 2
             RetirePlayer();
-        } 
+            global.ResetFlags();
+        }
+    }
+    void ParseFlagsInitialDwellings(Tile t) //phase 0
+    {
+        //If the building flag is set to dwelling AND the terrain matches the players habitat
+        if (Building.Equals(global.BuildFlag, Building.Building_Type.Dwelling) &&
+            t.GetTerrainType() == localPlayer.GetHabitat())
+        {
+            FreeBuild(global.BuildFlag, t);
+            localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendBuildData(t.GetCoordinates().GetXY(), global.BuildFlag);
+
+            RetirePlayer();
+        }
+
+        global.ResetFlags();
     }
 
-    void ParseFlagsRoundMainPhase(Tile t) //phase 2 - Main game phase
+    void ParseFlagsRoundEndCultBonus()
+    {
+        RetirePlayer();
+    }
+
+    void ParseFlagsRoundActionPhase(Tile t) //phase 2 - Main game phase
     {
         //If the building flag is set AND 
         //if player is upgrading OR the tile is unoccupied 
@@ -237,6 +269,7 @@ public class GameController : MonoBehaviour {
             localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendBuildData(t.GetCoordinates().GetXY(), global.BuildFlag);
             if (Build(global.BuildFlag, t)) { localPlayer.EndTurn(); }; //End turn unless player gets a town tile or favour tile
             endTurnOrBuild = false; //If it was set, it isn't now.
+            global.ResetFlags();
         }
         //If the terrain flag is(isn't not) set AND there is no building on this tile AND and this is not a river tile AND player validation passes(resources OK)
         if ((!Terrain.TerrainEquals(global.Terraform_Flag, Terrain.TerrainType.NOTHING)) &&
@@ -245,33 +278,26 @@ public class GameController : MonoBehaviour {
         {
             Terraform(global.Terraform_Flag, t);
             localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendTerraformData(t.GetCoordinates().GetXY(), global.Terraform_Flag);
+            global.ResetFlags();
         }
 
-        global.ResetFlags();
+        if (global.RoundBonusFlag != RoundBonusManager.RoundBonusType.NOTHING) { ParseFlagsRoundBonusPicking(); }; //Signals end of the round for this player
+
+        if (global.DebugRAISENEIGHBOURS) { DebugRaiseTileNeighbours(t); global.DebugRAISENEIGHBOURS = false; }
     }
 
-    void ParseFlagsRoundEnd() //phase 3 add accumulative points
+    void DebugRaiseTileNeighbours(Tile t)
     {
-        localPlayer.CalculateAccumulativeBonuses();
-        localPlayer.CurrentRoundBonus = null;
-        RetirePlayer();
-        phase = 1; //Next phase after roundEnd is Income phase, phase 1
-    }
-
-    //End a players RoundMain phase, triggered by user via UI
-    public void End_Round()
-    {
-        localPlayer.CalculateAccumulativeBonuses(); //Calc points
-        localPlayer.AddToNonBuildingIncome(localPlayer.CurrentRoundBonus.Round_Income.Reciprocal().IncomeAsArray()); //Calc new income and update UI
-        localPlayer.ResetTemporaryPointBonuses(); //Reset temp bonuses so they dont get carried over
-        RetirePlayer();
+        foreach (Tile t2 in board.GetNeighbours(t.GetCoordinates().GetXY()))
+        {
+            t2.transform.Translate(new Vector3(0,1,0));
+        }
     }
 
     //Retire a player when hes finished his phase
     public void RetirePlayer()
     {
         localPlayer.Retire();
-        SetUpPhase();
     }
 
     public void CastMagic()
@@ -295,7 +321,7 @@ public class GameController : MonoBehaviour {
                 if (global.MagicCastFlag == MagicController.SpellType.World_Bridge)
                 {
                     localPlayer.CastSpell(magicController.GetSpell((int)global.MagicCastFlag)); //Cast spell to remove magic from tier 3 pool
-                    bm.Allow_Bridge(localPlayer.GetID());
+                    bm.AllowBridge(localPlayer.GetID());
                 }
                 else
                 {
@@ -358,6 +384,7 @@ public class GameController : MonoBehaviour {
         {
             networkedUI.PanelInteractivityEnDisable(networkedUI.favourButtons, true);
             networkedUI.DisEnableFavourTiles();
+            favourTileAvailable = true;
             endTurn = false;
         }
 
@@ -426,15 +453,18 @@ public class GameController : MonoBehaviour {
         if (ci_ != null)
         {
             localPlayer.AddSingleIncome(new SingleIncome(0,0,0, cultController.AddToTrackLevel(ci_, localPlayer),0)); //Add to the cult track and then add any owed magic to player
-            progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Cult_fire, localPlayer.GetCultData().GetLevels()[0], localPlayer.GetID());
-            progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Cult_water, localPlayer.GetCultData().GetLevels()[1], localPlayer.GetID());
-            progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Cult_earth, localPlayer.GetCultData().GetLevels()[2], localPlayer.GetID());
-            progressTrackManager.Progress_Track(TracksInterface.ProgressTrackRef.Cult_air, localPlayer.GetCultData().GetLevels()[3], localPlayer.GetID());
         }
+    }
+
+    internal void AddSingleIncome(SingleIncome singleIncome)
+    {
+        localPlayer.AddSingleIncome(singleIncome);
     }
 
     public void TakeFavourTile(int tracktier)
     {
+        if (!favourTileAvailable) { return; }
+
         int[] temp = CultController.ParseInt(tracktier); //Parse e.g. 12 into track 1 tier 2
         int track = temp[0]-1; int tier = temp[1];
 
@@ -460,16 +490,25 @@ public class GameController : MonoBehaviour {
             AddCultIncome(wt.Get_CultIncome());
 
             networkedUI.PanelInteractivityEnDisable(networkedUI.favourButtons, false);
+            networkedUI.DisEnableFavourTiles();
 
             localPlayer.EndTurn();
-        } //If no options are picked for whatever reason return, otherwise send the data to the server
-        else { return; } localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendPickedFavourData(track, tier);
+        } 
+        
+        //If no options are picked for whatever reason return, otherwise send the data to the server and disallow further picking of favours
+        else { return; }
+
+        localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendPickedFavourData(track, tier);
+        favourTileAvailable = false;
     }
 
     public void EndTurnRetire()
     {
-        if (endTurnOrBuild) { localPlayer.EndTurn(); endTurnOrBuild = false; }
-        else { phase=3; localPlayer.Retire(); SetUpPhase(); }
+        if (turnController.CurrentPhase == 6 && CheckLocalTurn())
+        {
+            if (endTurnOrBuild) { localPlayer.EndTurn(); endTurnOrBuild = false; } //If the player gives up their chance to do 2 things on one turn
+            else { networkedUI.DisEnableRoundBonuses(true); roundBonusManager.AppearRoundBonuses(); } //Else they want to retire. So appear the round bonuses and let them choose one.
+        }
     }
 
     public void DebugAddMagic()
@@ -480,5 +519,9 @@ public class GameController : MonoBehaviour {
     bool CheckLocalTurn()
     {
         return localPlayer.TakingTurn();
+    }
+    internal void EndTurn()
+    {
+        localPlayer.EndTurn();
     }
 }

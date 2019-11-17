@@ -4,11 +4,12 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour {
 
-    GameController tc;
+    GameController gameController;
 
     //Terrain related
     public Terrain terrain;
     public Material[] terrains = new Material[7];
+    public GameObject[] terrainModels = new GameObject[7];
     public Terrain.TerrainType starting_terrain;
 
     //Bridge
@@ -32,9 +33,9 @@ public class Tile : MonoBehaviour {
         coordinates = new Coordinate(x,y);
         terrain = new Terrain(starting_terrain);
 
-        if (!riverTile) { Terraform(terrain.GetValue()); }
+        if (!riverTile) { Terraform(terrain.GetValue());}
 
-        tc = GameObject.Find("Controller").GetComponent<GameController>();
+        gameController = GameObject.Find("Controller").GetComponent<GameController>();
 
         //No building or towngroup to begin with
         towngroup = null; 
@@ -45,11 +46,34 @@ public class Tile : MonoBehaviour {
 
     void OnMouseDown()
     {
-        tc.ParseFlags(this);
+        gameController.ParseFlags(this);
     }
 
     public void Terraform(Terrain.TerrainType t_type)
     { 
+        switch (t_type) //Switch until all models are created
+        {
+            case Terrain.TerrainType.Forest: ReplaceTerrainModel(t_type); break;
+            case Terrain.TerrainType.Mountain: ReplaceTerrainModel(t_type); break;
+            case Terrain.TerrainType.Wasteland: ReplaceTerrainModel(t_type); break;
+            case Terrain.TerrainType.Desert: ReplaceTerrainModel(t_type); break;
+            case Terrain.TerrainType.Plains: ReplaceTerrainModel(t_type); break;
+            case Terrain.TerrainType.Swamp: ReplaceTerrainModel(t_type); break;
+            case Terrain.TerrainType.Lakes: ReplaceTerrainModel(t_type); break;
+        }
+
+        terrain.Set(t_type);
+    }
+
+    void ReplaceTerrainModel(Terrain.TerrainType t_type) //These extra two methods are required until all terrain models are completed
+    {
+        Destroy(transform.GetChild(0).gameObject);
+        GameObject go = Instantiate(terrainModels[(int)t_type], transform);
+        go.transform.SetAsFirstSibling();
+    }
+
+    void ReplaceMaterialViaRenderer(Terrain.TerrainType t_type)
+    {
         GetRenderer().material = terrains[(int)t_type];
         terrain.Set(t_type);
     }
@@ -61,7 +85,7 @@ public class Tile : MonoBehaviour {
 
     public bool HasBuilding()
     {
-        return TileBuilding.GetValue() != 5;
+        return TileBuilding.HasBuilt();
     }
 
     public Building.Building_Type GetBuildingType()
@@ -78,14 +102,14 @@ public class Tile : MonoBehaviour {
     public void Build(Building.Building_Type bt, Material mat)
     {
         //Destroy previous building.
-        if (HasBuilding()) { Destroy(transform.GetChild(1).gameObject); }
+        if (HasBuilding()) { Destroy(transform.GetChild(0).GetChild(1).GetChild(0).gameObject); }
 
         //Build the building
         TileBuilding.Build(bt);
-        
+
         //Instantiate new building on the map
-        GameObject x = Instantiate(buildings[(int)bt], gameObject.transform);
-        x.transform.Translate(new Vector3(0, 0.25f, 0), Space.World);
+        GameObject x = Instantiate(buildings[(int)bt], transform.GetChild(0).GetChild(1));
+        x.transform.Translate(new Vector3(0, 0, 0), Space.World);
         x.GetComponentInChildren<Renderer>().material = mat;
     }
 

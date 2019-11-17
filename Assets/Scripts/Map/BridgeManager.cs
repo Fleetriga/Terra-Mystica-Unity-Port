@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class BridgeManager : MonoBehaviour {
 
-    bool allow_bridge;
-    int allowed_ID;
+    bool allowbridge;
+    int allowedID;
     public GameController gameController;
     public Bridge[] bridges;
 
@@ -27,28 +27,28 @@ public class BridgeManager : MonoBehaviour {
         bridges[ID].SetBridgeGameObjectActive();
     }
 
-    public bool Bridge_Allowed()
+    public bool BridgeAllowed()
     {
-        return allow_bridge;
+        return allowbridge;
     }
 
-    public int Get_Allowed_PlayerID()
+    public int GetAllowedPlayerID()
     {
-        return allowed_ID;
+        return allowedID;
     }
 
-    public void Allow_Bridge(int playerID)
+    public void AllowBridge(int playerID)
     {
-        allowed_ID = playerID;
-        allow_bridge = true;
+        allowedID = playerID;
+        allowbridge = true;
     }
 
-    public void Disallow_Bridge()
+    public void DisallowBridge()
     {
-        allow_bridge = false;
+        allowbridge = false;
     }
 
-    public void Merge_Towns(TownGroup tg1, TownGroup tg2)
+    public void MergeTowns(TownGroup tg1, TownGroup tg2)
     {
         gameController.Merge_Towns(tg1, tg2);
     }

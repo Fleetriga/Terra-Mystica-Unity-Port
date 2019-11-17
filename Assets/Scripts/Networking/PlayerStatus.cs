@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Mirror;
 
 public class PlayerStatus : NetworkBehaviour
@@ -10,34 +8,36 @@ public class PlayerStatus : NetworkBehaviour
     public PlayerStatusEnum CurrentPlayerStatus;
 
 
-    PlayerNetworked playerHost;
+    TurnController turnC;
 
     void Start()
     {
-        playerHost = GameObject.Find("HostPlayer").GetComponent<PlayerNetworked>();
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!hasAuthority) { return; }
+        if (!hasAuthority || turnC == null) { return; }
 
-        if (playerHost.CurrentPlayer == GetComponent<PlayerNetworked>().Player_ID && CurrentPlayerStatus == PlayerStatusEnum.Standby)
+        if (turnC.CurrentPlayerID == GetComponent<PlayerNetworked>().PlayerID && CurrentPlayerStatus == PlayerStatusEnum.Standby)
         {
             Cmd_SetPlayerStatus(PlayerStatusEnum.TakingTurn);
         }
-        if (playerHost.CurrentPlayer != GetComponent<PlayerNetworked>().Player_ID)
+        if (turnC.CurrentPlayerID != GetComponent<PlayerNetworked>().PlayerID)
         {
             Cmd_SetPlayerStatus(PlayerStatusEnum.Standby);
+        }
+        if (turnC.PlayersLeftThisPhase == 1 && CurrentPlayerStatus == PlayerStatusEnum.EndingTurn && turnC.CurrentPlayerID == GetComponent<PlayerNetworked>().PlayerID) 
+            //Single player should always be the one taking his turn. However if he's trying to retire bloody let him.
+        {
+            Cmd_SetPlayerStatus(PlayerStatusEnum.TakingTurn);
         }
         if (Input.GetKeyDown(KeyCode.P))
         {
             Cmd_SetPlayerStatus(PlayerStatusEnum.EndingTurn);
         }
-        if (NetworkServer.connections.Count == 1) //If theres only 1 player allow them to always take turns
-        {
-            Cmd_SetPlayerStatus(PlayerStatusEnum.TakingTurn);
-        }
+
     }
 
     public void SetPlayerStatus(PlayerStatusEnum status)
@@ -49,5 +49,10 @@ public class PlayerStatus : NetworkBehaviour
     public void Cmd_SetPlayerStatus(PlayerStatusEnum status)
     {
         CurrentPlayerStatus = status;
+    }
+
+    public void EnableStatusCheck()
+    {
+        turnC = GameObject.Find("TurnController(Clone)").GetComponent<TurnController>();
     }
 }

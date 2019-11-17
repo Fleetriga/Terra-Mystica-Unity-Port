@@ -7,6 +7,6 @@ public class Tile_Hex : Tile {
 
     public override Renderer GetRenderer()
     {
-        return transform.GetChild(0).GetComponent<Renderer>();
+        return transform.GetChild(0).GetChild(0).GetComponent<Renderer>();
     }
 }

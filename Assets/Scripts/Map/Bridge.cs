@@ -11,16 +11,16 @@ public class Bridge : MonoBehaviour {
     void BuildBridge()
     {
         //get current player
-        if (bm.Get_Allowed_PlayerID() == joined_tiles[0].GetOwner() || bm.Get_Allowed_PlayerID() == joined_tiles[1].GetOwner()) //If the person building it has a building nextdoor
+        if (bm.GetAllowedPlayerID() == joined_tiles[0].GetOwner() || bm.GetAllowedPlayerID() == joined_tiles[1].GetOwner()) //If the person building it has a building nextdoor
         {
             //Link to tiles
             joined_tiles[0].Bridges.Add(this);
             joined_tiles[1].Bridges.Add(this);
 
-            bm.Merge_Towns(joined_tiles[0].GetTownGroup(), joined_tiles[1].GetTownGroup());
+            bm.MergeTowns(joined_tiles[0].GetTownGroup(), joined_tiles[1].GetTownGroup());
 
             //Then stop other dickheads from building bridges. Build walls not bridges.
-            bm.Disallow_Bridge();
+            bm.DisallowBridge();
 
             bm.BuildBridge(BridgeID);
         }
@@ -35,13 +35,13 @@ public class Bridge : MonoBehaviour {
 
     void OnMouseDown()
     {
-        if (bm.Bridge_Allowed())
+        if (bm.BridgeAllowed())
         {
             BuildBridge();
         }
     }
 
-    public Tile CrossBridge(Tile other)
+    public Tile CrossBridgeFrom(Tile other)
     {
         if (joined_tiles[0] == null) { return null; } //No joined boys then no bridge, return nothing. But this should never be used.
         else if (other.GetCoordinates().GetX() == joined_tiles[0].GetCoordinates().GetX() && other.GetCoordinates().GetY() == joined_tiles[0].GetCoordinates().GetY()) { return joined_tiles[1]; } //If other is joined_tiles[0] then return joined_tiles[1]

@@ -5,9 +5,10 @@ using UnityEngine;
 
 public abstract class Faction {
 
-    public enum Faction_Type { Mermaids, Test};
+    public enum FactionType { Mermaids, Test, NOFACTION};
 
     //***********************************Other faction variables
+    public FactionType factionType;
     protected Terrain.TerrainType habitat;
     protected Material building_material;
 
@@ -149,32 +150,32 @@ public abstract class Faction {
         return defaultCult;
     }
 
-    public static string GetFaction(Faction_Type ft)
+    public static string GetFaction(FactionType ft)
     {
         switch (ft)
         {
-            case Faction_Type.Mermaids: return Mermaids.FactionName;
-            case Faction_Type.Test: return "TestFaction not implemented at all lad";
+            case FactionType.Mermaids: return Mermaids.FactionName;
+            case FactionType.Test: return "TestFaction not implemented at all lad";
         }
         return "fucked if i know how you even managed this";
     }
 
-    public static Faction GetNewFaction(Faction_Type ft)
+    public static Faction GetNewFaction(FactionType ft)
     {
         switch (ft)
         {
-            case Faction_Type.Mermaids: return new Mermaids();
-            case Faction_Type.Test: return new Mermaids();
+            case FactionType.Mermaids: return new Mermaids();
+            case FactionType.Test: return new TestFaction();
         }
         return null;
     }
 
-    public static Material GetFactionMaterial(Faction_Type ft)
+    public static Material GetFactionMaterial(FactionType ft)
     {
         switch (ft)
         {
-            case Faction_Type.Mermaids: return Resources.Load<Material>(Mermaids.FactionMaterial);
-            case Faction_Type.Test: return Resources.Load<Material>(TestFaction.FactionMaterial);
+            case FactionType.Mermaids: return Resources.Load<Material>(Mermaids.FactionMaterial);
+            case FactionType.Test: return Resources.Load<Material>(TestFaction.FactionMaterial);
         }
         return Resources.Load<Material>(Mermaids.FactionMaterial);
     }

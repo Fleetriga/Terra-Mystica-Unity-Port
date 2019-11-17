@@ -20,7 +20,7 @@ public class Mermaids : Faction {
 
         magic_default = new Magic(7, 5, 0);
 
-        habitat = Terrain.TerrainType.Swamp;
+        habitat = Terrain.TerrainType.Lakes;
 
         max_upgrade_terraform = 3;
 
@@ -29,8 +29,8 @@ public class Mermaids : Faction {
 
         starting_dwellings = 2;
 
-        Starting_gold = 50;
-        Starting_worker = 50;
+        Starting_gold = 15;
+        Starting_worker = 3;
         Starting_priest = 0;
         Starting_shovels = 0;
 

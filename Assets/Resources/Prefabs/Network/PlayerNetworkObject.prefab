@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 1344823746850441463}
   m_Layer: 0
   m_Name: PlayerNetworkObject
-  m_TagString: Player_Networked_Object
+  m_TagString: NetworkedPlayerObjects
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -63,15 +63,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8c890b575bab40429ee71a3ae6f4268, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
   syncInterval: 0.1
-  playerGameObject: {fileID: 1466465993357930, guid: f049af37d4c5aa3449b98a5d9fd48331,
+  LocalPlayerObject: {fileID: 1466465993357930, guid: f049af37d4c5aa3449b98a5d9fd48331,
     type: 3}
-  dropDown: {fileID: 9211180173593796409, guid: dc8f7be8733289f489e77b5b440599bd,
+  PlayerLobbyEntityPrefab: {fileID: 1260458285343118910, guid: 1b9b9076481b4744aac9c66fded0fdbb,
     type: 3}
-  CurrentPlayer: 0
-  Player_ID: 0
-  isHost: 0
-  p_faction: 0
+  turnControllerPrefab: {fileID: 1286079630539784735, guid: 9f9b16fe2886d894f8d8e47e5b87f7e7,
+    type: 3}
+  PlayerID: 0
+  PlayerFaction: 2
 --- !u!114 &2678737269842740147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84,6 +85,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d92a731baa53a14e99ab3c38f8b4d13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
   syncInterval: 0.1
   CurrentPlayerStatus: 0
 --- !u!114 &717155727272584582
@@ -98,6 +100,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 591cbae0eb8e17b41bfad067f4aa8a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
   syncInterval: 0.1
   CoordinateX: 0
   CoordinateY: 0
@@ -105,6 +108,7 @@ MonoBehaviour:
   Terraformed: 7
   FoundedCityBonus: 5
   PickedRoundBonus: 9
+  ReturnedRoundBonus: 0
   CastedSpell: 9
   Change: 7
 --- !u!114 &1344823746850441463
@@ -119,4 +123,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c510749916f00944eb0939805141876f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
   syncInterval: 0.1
+  PlayerGold: 0
+  PlayerWorkers: 0
+  PlayerPriests: 0
+  PlayerPoints: 0
+  tierOne: 0
+  tierTwo: 0
+  tierThree: 0

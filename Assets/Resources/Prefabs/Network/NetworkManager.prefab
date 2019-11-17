@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4773379759823246190}
   - component: {fileID: 4773379759823246191}
-  - component: {fileID: 4773379759823246176}
   - component: {fileID: 8133784712848136263}
+  - component: {fileID: -5705355995655906872}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -48,60 +48,31 @@ MonoBehaviour:
   OnClientConnected:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   OnClientDataReceived:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Mirror.UnityEventArraySegment, Mirror, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
   OnClientError:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Mirror.UnityEventException, Mirror, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
   OnClientDisconnected:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
   OnServerConnected:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Mirror.UnityEventInt, Mirror, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   OnServerDataReceived:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Mirror.UnityEventIntArraySegment, Mirror, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
   OnServerError:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Mirror.UnityEventIntException, Mirror, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
   OnServerDisconnected:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: Mirror.UnityEventInt, Mirror, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   port: 7777
   NoDelay: 1
   serverMaxMessageSize: 16384
   clientMaxMessageSize: 16384
---- !u!114 &4773379759823246176
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4773379759823246177}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6442dc8070ceb41f094e44de0bf87274, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  showGUI: 1
-  offsetX: 0
-  offsetY: 0
 --- !u!114 &8133784712848136263
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -124,11 +95,25 @@ MonoBehaviour:
   transport: {fileID: 4773379759823246191}
   networkAddress: localhost
   maxConnections: 4
+  authenticator: {fileID: 0}
   playerPrefab: {fileID: 3479789776446344861, guid: cf6b361e0e33bcd418d39d534e3ee5e9,
     type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs:
   - {fileID: 3479789776446344861, guid: cf6b361e0e33bcd418d39d534e3ee5e9, type: 3}
-  - {fileID: 9211180173593796409, guid: dc8f7be8733289f489e77b5b440599bd, type: 3}
-  - {fileID: 4867763872687019138, guid: 76610df17598c3d449c634dfdea58e10, type: 3}
+  - {fileID: 2087729297351512228, guid: 105f8eba9004f434ab765ab3d9c12432, type: 3}
+  - {fileID: 1260458285343118910, guid: 1b9b9076481b4744aac9c66fded0fdbb, type: 3}
+  - {fileID: 1286079630539784735, guid: 9f9b16fe2886d894f8d8e47e5b87f7e7, type: 3}
+--- !u!114 &-5705355995655906872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4773379759823246177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc4d4b657debd9f4e9df860cbf42c80f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -4,24 +4,33 @@ using UnityEngine.SceneManagement;
 
 public class PlayerNetworked : NetworkBehaviour {
 
-    public GameObject playerGameObject;
-    public GameObject dropDown;
+    [SerializeField] GameObject LocalPlayerObject;
+    [SerializeField] GameObject PlayerLobbyEntityPrefab;
+    [SerializeField] GameObject turnControllerPrefab;
 
-    //Turn Controlling. Only set on host
-    public int CurrentPlayer;
+    GameLobbyManager lobbyManager;
 
-    [SyncVar]
-    public int Player_ID;
-    [SyncVar]
-    public bool isHost;
-    [SyncVar]
-    public Faction.Faction_Type p_faction;
+    public static int playerID;
+
+    [SyncVar] public int PlayerID;
+    [SyncVar] [SerializeField] bool isReady; //Ready check before game starts
+    [SyncVar] bool isHost;
+    [SyncVar] public Faction.FactionType PlayerFaction = Faction.FactionType.NOFACTION;
+
+    public bool IsHost { get { return isHost; } }
+    public bool IsReady { get { return isReady; } }
 
     // Use this for initialization
     void Start() {
         DontDestroyOnLoad(gameObject);
 
-        if (isHost) //New players identify HostPlayer
+        //Player has joined. Tell the lobbyManager so that it can spawn a lobby entity for the player.
+        lobbyManager = GameObject.Find("GameLobby").GetComponent<GameLobbyManager>();
+        lobbyManager.PlayerConnected(this, isLocalPlayer, isServer); //Behaviour changes for local players own lobby entity.
+
+        PlayerID = playerID++;
+
+        if (isHost) //To identify host in Hierachy, this conditional is only fired for clients, isHost is false for the host itself until later.
         {
             name = "HostPlayer";
         }
@@ -32,10 +41,8 @@ public class PlayerNetworked : NetworkBehaviour {
         if (isServer) // player object becomes TurnController for everyone;
         {
             Cmd_SetHost();
+            Cmd_SpawnTurnController();
         }
-
-        //Spawn the dropdown and turn controller
-        Cmd_SpawnDropdown();
     }
 
     void Cmd_AddPlayerStatus()
@@ -47,27 +54,7 @@ public class PlayerNetworked : NetworkBehaviour {
         gameObject.AddComponent<PlayerStatus>();
     }
 
-    void Update()
-    {
-        //If you are the host, scan other players and yourself for turn changes
-        if (isHost && hasAuthority && GetComponent<TurnController>() != null)
-        {
-            if (GetComponent<TurnController>().ScanForTurnChanges()) { Cmd_SetCurrentPlayer(GetComponent<TurnController>().CurrentPlayersID()); }
-        }
-    }
-
     //Host methods
-    [Command]
-    void Cmd_SetCurrentPlayer(int newCurrentPlayersId)
-    {
-        CurrentPlayer = newCurrentPlayersId;
-        Rpc_SetCurrentPlayer(newCurrentPlayersId);
-    }
-    [ClientRpc]
-    void Rpc_SetCurrentPlayer(int newCurrentPlayersId)
-    {
-        CurrentPlayer = newCurrentPlayersId;
-    }
     [Command]
     void Cmd_SetHost()
     {
@@ -75,47 +62,63 @@ public class PlayerNetworked : NetworkBehaviour {
         isHost = true;
     }
 
-    void OnLevelWasLoaded()
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnLevelFinishedLoading;
+    }
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnLevelFinishedLoading;
+    }
+
+    void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
     {
         if (hasAuthority)
         {
-            GameObject go = Instantiate(playerGameObject);
-            go.GetComponent<Player>().SetUp(p_faction, Player_ID, gameObject);
-            GameObject.Find("Controller").GetComponent<GameController>().Start_Game();
+            GetComponent<PlayerStatus>().EnableStatusCheck();
+            GameObject go = Instantiate(LocalPlayerObject);
+            go.GetComponent<Player>().SetUp(PlayerFaction, PlayerID, gameObject);
+            GameObject.Find("Controller").GetComponent<GameController>().StartGame();
         }
     }
 
-    public string Set_Faction(Faction.Faction_Type i)
+    public string SetFaction(Faction.FactionType i)
     {
         Cmd_SetFaction(i);
         return Faction.GetFaction(i);
     }
     [Command]
-    public void Cmd_SetFaction(Faction.Faction_Type i)
+    public void Cmd_SetFaction(Faction.FactionType i)
     {
-        p_faction = i;
+        PlayerFaction = i;
     }
 
     [Command]
-    void Cmd_SpawnDropdown()
+    void Cmd_SpawnTurnController()
     {
-        GameObject go = Instantiate(dropDown);
-        NetworkServer.SpawnWithClientAuthority(go, connectionToClient);
-        go.GetComponent<DropDownMenu>().Cmd_SetOwner(gameObject);
-        Rpc_SetIDMoveDropDown(-100, go);
+        GameObject go = Instantiate(turnControllerPrefab);
+        NetworkServer.Spawn(go);
     }
-    [ClientRpc]
-    void Rpc_SetIDMoveDropDown(int yDifference, GameObject go)
+
+    [Command]
+    public void Cmd_SetPlayerReadyUnready()
     {
-        Player_ID = GameObject.FindGameObjectsWithTag("Player_Networked_Object").Length - 1;
-        go.transform.GetChild(0).GetComponent<RectTransform>().localPosition = new Vector2(0, yDifference * Player_ID);
+        isReady = !isReady;
+    }
+
+    /// <summary>
+    /// Will no longer use this bastard.
+    /// </summary>
+    [Command]
+    void Cmd_SpawnPlayerLobbyEntity()
+    {
+        GameObject go = Instantiate(PlayerLobbyEntityPrefab);
+        NetworkServer.SpawnWithClientAuthority(go, connectionToClient);
     }
 
     public void StartGamePreparations()
     {
         if (!hasAuthority || !isHost) { return; } //If the player is not the host
-        gameObject.AddComponent<TurnController>();
-        GetComponent<TurnController>().SetUp(NetworkServer.connections.Count);
         Rpc_ChangeScene("GameScene");
     }
     [ClientRpc]
@@ -126,6 +129,6 @@ public class PlayerNetworked : NetworkBehaviour {
 
     public Material GetFactionMaterial()
     {
-        return Faction.GetFactionMaterial(p_faction);
+        return Faction.GetFactionMaterial(PlayerFaction);
     }
 }
