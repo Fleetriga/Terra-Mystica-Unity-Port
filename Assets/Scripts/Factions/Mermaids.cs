@@ -48,6 +48,7 @@ public class Mermaids : Faction {
         Cost_Terraform = new Income_Map(max_upgrade_terraform+1);
 
         //Dwellings
+        dwelling_income.AddIncome(new SingleIncome(0, 1, 0, 0, 0)); //0
         dwelling_income.AddIncome(new SingleIncome(0, 1, 0, 0, 0)); //1
         dwelling_income.AddIncome(new SingleIncome(0, 1, 0, 0, 0)); //2
         dwelling_income.AddIncome(new SingleIncome(0, 1, 0, 0, 0)); //3
@@ -58,23 +59,28 @@ public class Mermaids : Faction {
         dwelling_income.AddIncome(new SingleIncome(0, 1, 0, 0, 0)); //8
 
         //tps
+        tp_income.AddIncome(new SingleIncome(0, 0, 0, 0, 0)); //None built
         tp_income.AddIncome(new SingleIncome(2, 0, 0, 1, 0));
         tp_income.AddIncome(new SingleIncome(2, 0, 0, 1, 0));
         tp_income.AddIncome(new SingleIncome(2, 0, 0, 2, 0));
         tp_income.AddIncome(new SingleIncome(2, 0, 0, 2, 0));
 
         //fortress
+        fortress_income.AddIncome(new SingleIncome(0, 0, 0, 0, 0)); //None built
         fortress_income.AddIncome(new SingleIncome(0, 0, 0, 4, 0));
 
         //Temple
+        temple_income.AddIncome(new SingleIncome(0, 0, 0, 0, 0)); //None built
         temple_income.AddIncome(new SingleIncome(0, 0, 1, 0, 0));
         temple_income.AddIncome(new SingleIncome(0, 0, 1, 0, 0));
         temple_income.AddIncome(new SingleIncome(0, 0, 1, 0, 0));
 
         //Sanctuary
+        sanctuary_income.AddIncome(new SingleIncome(0, 0, 0, 0, 0)); //None built
         sanctuary_income.AddIncome(new SingleIncome(0, 0, 1, 0, 0));
 
         //terraform cost
+        Cost_Terraform.AddIncome(new SingleIncome(0, 0, 0, 0, 0)); //None built
         Cost_Terraform.AddIncome(new SingleIncome(0, 3, 0, 0, 0));
         Cost_Terraform.AddIncome(new SingleIncome(0, -1, 0, 0, 0)); //when upgraded it becomes 1 cheaper
         Cost_Terraform.AddIncome(new SingleIncome(0, -1, 0, 0, 0));

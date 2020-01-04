@@ -6,6 +6,7 @@ public class CultTrackManager : MonoBehaviour
 {
     [SerializeField] MultiProgressTrack[] tracks;
     [SerializeField] GameObject CultTrackEntity;
+    [SerializeField] MineShaftManager[] mineShafts;
 
     void Awake()
     {
@@ -26,4 +27,8 @@ public class CultTrackManager : MonoBehaviour
         }   
     }
 
+    public void TakeMine(int track)
+    {
+        mineShafts[track].TakeMine();
+    }
 }

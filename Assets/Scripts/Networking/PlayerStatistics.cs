@@ -9,6 +9,8 @@ public class PlayerStatistics : NetworkBehaviour
 {
 
     PlayerSheetsInterface playerSheetUpdater;
+    PointBorder pointBorder;
+
     //Player resources
     [SyncVar (hook=nameof(PlayerSheetGoldUpdate))]
     public int PlayerGold;
@@ -46,6 +48,8 @@ public class PlayerStatistics : NetworkBehaviour
     void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
     {
         playerSheetUpdater = GameObject.Find("UI").GetComponent<PlayerSheetsInterface>();
+        pointBorder = GameObject.Find("PointBorder").GetComponent<PointBorder>();
+        pointBorder.AddPlayerPointEntity(GetComponent<PlayerNetworked>().PlayerID, PlayerPoints, GetComponent<PlayerNetworked>().GetFactionMaterial());
     }
 
     #region SyncVar Setters
@@ -112,6 +116,7 @@ public class PlayerStatistics : NetworkBehaviour
         PlayerPoints = value;
         if (playerSheetUpdater == null) { return; }
         playerSheetUpdater.PointsUpdate(GetComponent<PlayerNetworked>().PlayerID);
+        pointBorder.MovePlayerPointEntity(GetComponent<PlayerNetworked>().PlayerID, value);
     }
     void PlayerSheetTierOneMagicUpdate(int value)
     {
@@ -131,5 +136,9 @@ public class PlayerStatistics : NetworkBehaviour
         if (playerSheetUpdater == null) { return; }
         playerSheetUpdater.MagicUpdate(GetComponent<PlayerNetworked>().PlayerID);
     }
+    #endregion
+
+    #region Other Reactive Changes
+
     #endregion
 }

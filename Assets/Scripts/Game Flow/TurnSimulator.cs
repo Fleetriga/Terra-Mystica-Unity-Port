@@ -1,11 +1,14 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class TurnSimulator : MonoBehaviour
 {
-    public Board tileMap;
-    public BridgeManager bridgeManager;
+    [SerializeField] Board tileMap;
+    [SerializeField] BridgeManager bridgeManager;
+    [SerializeField] CultTrackManager cultTrackManager;
+    [SerializeField] SoundEffects soundEffects;
     TownFoundingBonusManager townFoundManager;
     WonderController wonderController;
     MagicController magicController;
@@ -40,6 +43,7 @@ public class TurnSimulator : MonoBehaviour
                     case TakenTurnData.ChangeFlag.FavourBonus: SimulateFavourTaken(ttd.CoordinateX, ttd.CoordinateY); break;
                     case TakenTurnData.ChangeFlag.CastWorldMagic: CastWorldMagic(ttd.CastedSpell); break;
                     case TakenTurnData.ChangeFlag.BuildBridge: BuildBridge(ttd.CoordinateX); break;
+                    case TakenTurnData.ChangeFlag.MineTaken: TakeMine(ttd.MineTaken); break;
                 }
 
                 //Reset data locally afterwards so that this is body isn't triggered again until the player does something else.
@@ -54,6 +58,8 @@ public class TurnSimulator : MonoBehaviour
     {
         tileMap.GetTile(coordinate).Build(typeToBuild, playersBuildingMaterial);
         tileMap.GetTile(coordinate).OwnersPlayerID = playerID;
+
+        soundEffects.PlaySFX(SoundEffects.SFX.build_SFX);
     }
 
     //Takes a coordinate, type of terrain and player information and simulates
@@ -61,6 +67,8 @@ public class TurnSimulator : MonoBehaviour
     public void SimulateTerraform(int[] coordinate, Terrain.TerrainType terrain)
     {
         tileMap.GetTile(coordinate).Terraform(terrain);
+
+        soundEffects.PlaySFX(SoundEffects.SFX.terraform_SFX);
     }
 
     //Takes city founding bonus tile. Reduces the amount of the given tile. All bonuses are calculated locally.
@@ -88,9 +96,14 @@ public class TurnSimulator : MonoBehaviour
     }
 
     //Takes round bonus. Disables the picking of that round bonus tile.
-    public void SimulateRoundBonusPicked(RoundBonusManager.RoundBonusType bonusType, RoundBonusManager.RoundBonusType returnedBonus)
+    void SimulateRoundBonusPicked(RoundBonusManager.RoundBonusType bonusType, RoundBonusManager.RoundBonusType returnedBonus)
     {
         roundBonusManager.TakeRoundBonus(bonusType);
         roundBonusManager.ReturnRoundBonus(returnedBonus);
     }
+    void TakeMine(int mineTaken)
+    {
+        cultTrackManager.TakeMine(mineTaken);
+    }
+
 }

@@ -5,7 +5,9 @@ using UnityEngine;
 
 public abstract class Faction {
 
-    public enum FactionType { Mermaids, Test, NOFACTION};
+    //Blue, yellow, grey, red, black, Green, Brown, Others
+    public enum FactionType { Mermaids, Swarmlings, Nomads, Fakirs, Dwarves, Gnomes, Chaos_Magicians, Giants, Darklings, Alchemists,
+                                Witches, Auren, Halflings, Cultists, Test, NOFACTION};
 
     //***********************************Other faction variables
     public FactionType factionType;
@@ -108,23 +110,23 @@ public abstract class Faction {
     }
 
     //Building Income map
-    public Income_Map Get_dwelling_income()
+    public Income_Map GetDwellingIncome()
     {
         return dwelling_income;
     }
-    public Income_Map Get_tp_income()
+    public Income_Map GetTpIncome()
     {
         return tp_income;
     }
-    public Income_Map Get_fortress_income()
+    public Income_Map GetFortressIncome()
     {
         return fortress_income;
     }
-    public Income_Map Get_temple_income()
+    public Income_Map GetTempleIncome()
     {
         return temple_income;
     }
-    public Income_Map Get_sanctuary_income()
+    public Income_Map GetSanctuaryIncome()
     {
         return sanctuary_income;
     }
@@ -150,11 +152,25 @@ public abstract class Faction {
         return defaultCult;
     }
 
-    public static string GetFaction(FactionType ft)
+    public static string GetFactionName(FactionType ft)
     {
         switch (ft)
         {
             case FactionType.Mermaids: return Mermaids.FactionName;
+            case FactionType.Swarmlings: return Swarmlings.FactionName;
+            case FactionType.Alchemists: return Alchemists.FactionName;
+            case FactionType.Auren: return Auren.FactionName;
+            case FactionType.Chaos_Magicians: return ChaosMagicians.FactionName;
+            case FactionType.Cultists: return Cultists.FactionName;
+            case FactionType.Darklings: return Darklings.FactionName;
+            case FactionType.Dwarves: return Dwarves.FactionName;
+            case FactionType.Fakirs: return Fakirs.FactionName;
+            case FactionType.Giants: return Giants.FactionName;
+            case FactionType.Gnomes: return Gnomes.FactionName;
+            case FactionType.Halflings: return Halflings.FactionName;
+            case FactionType.Nomads: return Nomads.FactionName;
+            case FactionType.Witches: return Witches.FactionName;
+
             case FactionType.Test: return "TestFaction not implemented at all lad";
         }
         return "fucked if i know how you even managed this";
@@ -165,6 +181,20 @@ public abstract class Faction {
         switch (ft)
         {
             case FactionType.Mermaids: return new Mermaids();
+            case FactionType.Swarmlings: return new Swarmlings();
+            case FactionType.Alchemists: return new Alchemists();
+            case FactionType.Auren: return new Auren();
+            case FactionType.Chaos_Magicians: return new ChaosMagicians();
+            case FactionType.Cultists: return new Cultists();
+            case FactionType.Darklings: return new Darklings();
+            case FactionType.Dwarves: return new Dwarves();
+            case FactionType.Fakirs: return new Fakirs();
+            case FactionType.Giants: return new Giants();
+            case FactionType.Gnomes: return new Gnomes();
+            case FactionType.Halflings: return new Halflings();
+            case FactionType.Nomads: return new Nomads();
+            case FactionType.Witches: return new Witches();
+
             case FactionType.Test: return new TestFaction();
         }
         return null;
@@ -175,6 +205,20 @@ public abstract class Faction {
         switch (ft)
         {
             case FactionType.Mermaids: return Resources.Load<Material>(Mermaids.FactionMaterial);
+            case FactionType.Swarmlings: return Resources.Load<Material>(Swarmlings.FactionMaterial);
+            case FactionType.Alchemists: return Resources.Load<Material>(Alchemists.FactionMaterial);
+            case FactionType.Auren: return Resources.Load<Material>(Auren.FactionMaterial);
+            case FactionType.Chaos_Magicians: return Resources.Load<Material>(ChaosMagicians.FactionMaterial);
+            case FactionType.Cultists: return Resources.Load<Material>(Cultists.FactionMaterial);
+            case FactionType.Darklings: return Resources.Load<Material>(Darklings.FactionMaterial);
+            case FactionType.Dwarves: return Resources.Load<Material>(Dwarves.FactionMaterial);
+            case FactionType.Fakirs: return Resources.Load<Material>(Fakirs.FactionMaterial);
+            case FactionType.Giants: return Resources.Load<Material>(Giants.FactionMaterial);
+            case FactionType.Gnomes: return Resources.Load<Material>(Gnomes.FactionMaterial);
+            case FactionType.Halflings: return Resources.Load<Material>(Halflings.FactionMaterial);
+            case FactionType.Nomads: return Resources.Load<Material>(Nomads.FactionMaterial);
+            case FactionType.Witches: return Resources.Load<Material>(Witches.FactionMaterial);
+
             case FactionType.Test: return Resources.Load<Material>(TestFaction.FactionMaterial);
         }
         return Resources.Load<Material>(Mermaids.FactionMaterial);

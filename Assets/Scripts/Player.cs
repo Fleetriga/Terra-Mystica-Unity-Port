@@ -8,6 +8,7 @@ public class Player : MonoBehaviour {
 
     public GameObject localPlayerObject;
     PlayerStatistics publicPlayerAttributes;
+    Music music;
 
     //Player resources
     int shovel_count;
@@ -109,6 +110,10 @@ public class Player : MonoBehaviour {
 
         //Update the UI after setting up all variables
         UpdateResourceText();
+
+        //Start music
+        music = GameObject.Find("Music").GetComponent<Music>();
+        music.SetUp(Faction.GetFactionName(p_faction));
 	}
 
     internal bool CheckPlayerCanAfford(SingleIncome price)
@@ -134,23 +139,23 @@ public class Player : MonoBehaviour {
         ResetIncomes();
 
         //For dwells
-        int[] income = faction.Get_dwelling_income().GetTotalIncome(current_dwelling);
+        int[] income = faction.GetDwellingIncome().GetTotalIncome(current_dwelling);
         AddTo_Income(income);
         
         //For tps
-        income = faction.Get_tp_income().GetTotalIncome(current_tp);
+        income = faction.GetTpIncome().GetTotalIncome(current_tp);
         AddTo_Income(income);
 
         //For fortress
-        income = faction.Get_fortress_income().GetTotalIncome(current_fortress);
+        income = faction.GetFortressIncome().GetTotalIncome(current_fortress);
         AddTo_Income(income);
 
         //For temples
-        income = faction.Get_temple_income().GetTotalIncome(current_temple);
+        income = faction.GetTempleIncome().GetTotalIncome(current_temple);
         AddTo_Income(income);
 
         //For sancuary
-        income = faction.Get_sanctuary_income().GetTotalIncome(current_sanctuary);
+        income = faction.GetSanctuaryIncome().GetTotalIncome(current_sanctuary);
         AddTo_Income(income);
 
         income = new int[] { bonus_gold, bonus_worker, bonus_priest, bonus_magic };

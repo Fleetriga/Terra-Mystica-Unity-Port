@@ -15,15 +15,27 @@ public class TakenTurnData : NetworkBehaviour
     public RoundBonusManager.RoundBonusType PickedRoundBonus;
     public RoundBonusManager.RoundBonusType ReturnedRoundBonus;
     public MagicController.SpellType CastedSpell;
+    public int MineTaken = 0;
 
-    public enum ChangeFlag { Build, Terraform, RoundBonus, FoundedCity, FavourBonus, CastWorldMagic, BuildBridge, NOTHING };
-    public ChangeFlag Change;
+    public enum ChangeFlag { Build, Terraform, RoundBonus, FoundedCity, FavourBonus, CastWorldMagic, BuildBridge, MineTaken, NOTHING };
+    public ChangeFlag Change = ChangeFlag.NOTHING;
+
+
+    void Awake()
+    {
+        ResetData();     
+    }
 
     public void SendBuildData(int[] coordinate, Building.Building_Type newBuilding)
     {
         Cmd_ChangeBuildFlagData(newBuilding);
         Cmd_ChangeCoordinateData(coordinate[0], coordinate[1]);
         Cmd_SetChangeFlag(ChangeFlag.Build);
+    }
+
+    public void SendMineTakenData(int track)
+    {
+        Cmd_SetMineTakenData(track);
     }
 
     public void SendTerraformData(int[] coordinate, Terrain.TerrainType newTerrain)
@@ -79,10 +91,12 @@ public class TakenTurnData : NetworkBehaviour
         ReturnedRoundBonus = RoundBonusManager.RoundBonusType.NOTHING;
         FoundedCityBonus = TownFoundingBonusManager.TownTiletype.NOTHING;
         CastedSpell = MagicController.SpellType.NOTHING;
+        MineTaken = 20;
 
         Change = ChangeFlag.NOTHING;
     }
 
+    #region Data Set Commands
     [Command]
     void Cmd_ChangeCoordinateData(int x, int y)
     {
@@ -93,6 +107,18 @@ public class TakenTurnData : NetworkBehaviour
     {
         CoordinateX = x;
         CoordinateY = y;
+    }
+
+    [Command]
+    void Cmd_SetMineTakenData(int track)
+    {
+        Rpc_SetMineTakenData(track);
+    }
+    [ClientRpc]
+    void Rpc_SetMineTakenData(int track)
+    {
+        Change = ChangeFlag.MineTaken;
+        MineTaken = track;
     }
 
     [Command]
@@ -182,4 +208,5 @@ public class TakenTurnData : NetworkBehaviour
     {
         Change = newFlag;
     }
+    #endregion
 }

@@ -166,8 +166,8 @@ GameObject:
   - component: {fileID: 1260458285343118909}
   - component: {fileID: -3720949641521740290}
   - component: {fileID: 2054487657665401946}
-  - component: {fileID: 7980270312727682925}
   - component: {fileID: 1429884295540937800}
+  - component: {fileID: 5324087984754280871}
   m_Layer: 5
   m_Name: PlayerLobbyEntity
   m_TagString: Untagged
@@ -231,22 +231,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4e7f0df5ad241c4bab214359b0f1bf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &7980270312727682925
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1260458285343118910}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4eb6d36d2de9ad04b98414cc9f965d01, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  factionImages:
-  - {fileID: 21300000, guid: 05999bfc2ea31da4c8a821644d4226a1, type: 3}
-  - {fileID: 21300000, guid: 4c999c7d76230e44ca7a75549ff9c920, type: 3}
-  - {fileID: 21300000, guid: 4c999c7d76230e44ca7a75549ff9c920, type: 3}
 --- !u!114 &1429884295540937800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -259,10 +243,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a80782df4f84e964595ef3be9186ad9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  abilityPrefabs:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  abilityPrefabs: []
+--- !u!114 &5324087984754280871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1260458285343118910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eb6d36d2de9ad04b98414cc9f965d01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FactionImages:
+  - {fileID: 21300000, guid: 2414f2de09c839248be668639b2c73a0, type: 3}
+  - {fileID: 21300000, guid: 91f34501f6602cd4d81eed56ff207cff, type: 3}
+  - {fileID: 21300000, guid: 4c999c7d76230e44ca7a75549ff9c920, type: 3}
 --- !u!1 &1260458285371559687
 GameObject:
   m_ObjectHideFlags: 0

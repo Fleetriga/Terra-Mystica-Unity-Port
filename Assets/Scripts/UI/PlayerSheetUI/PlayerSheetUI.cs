@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class PlayerSheetUI : MonoBehaviour
 {
-    public Image portrait;
-    public Text[] moneyWorkerPriest;
-    public Text[] magicTiers;
-    public Text points;
+    [SerializeField] Image portrait;
+    [SerializeField] Text[] moneyWorkerPriest;
+    [SerializeField] Text[] magicTiers;
+    [SerializeField] Text points;
+    [SerializeField] TextMeshProUGUI playerName;
 
     public void RegularUpdate(PlayerStatistics ps)
     {
@@ -35,8 +37,12 @@ public class PlayerSheetUI : MonoBehaviour
 
     }
 
-    public void SetUp()
+    public void SetUp(PlayerStatistics ps)
     {
-
+        playerName.text = ps.GetComponent<PlayerNetworked>().ProfileName;
+        portrait.sprite = GetComponent<FactionImageHolder>().FactionImages[(int)ps.GetComponent<PlayerNetworked>().PlayerFaction];
+        RegularUpdate(ps);
+        PointsUpdate(ps);
+        TierMagicUpdate(ps);
     }
 }

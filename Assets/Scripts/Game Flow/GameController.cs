@@ -11,6 +11,7 @@ public class GameController : MonoBehaviour {
     Networked_UI_Updater networkedUI;
     CultController cultController;
     TracksInterface progressTrackManager;
+
     RoundBonusManager roundBonusManager;
     RoundEndBonusManager roundEndBonusManager;
     GlobalFlags global;
@@ -21,6 +22,7 @@ public class GameController : MonoBehaviour {
     public Board board;
     public AbilityManager am;
     public BridgeManager bm;
+    [SerializeField] GameObject GameEnd;
 
     bool endTurnOrBuild;
     bool favourTileAvailable;
@@ -58,8 +60,6 @@ public class GameController : MonoBehaviour {
         SetUpTracks();
         global.Set_Up();
     }
-
-    
 
     //Checks if player can afford a certain price before going through with an action
     public bool CheckPlayerCanAfford(SingleIncome price)
@@ -121,14 +121,14 @@ public class GameController : MonoBehaviour {
             case 3: if (localPlayer.faction.factionType != (Faction.FactionType)4) { RetirePlayer();} break; //Chaos Magicians first dwelling placement
             case 4: networkedUI.DisEnableRoundBonuses(true); roundBonusManager.AppearRoundBonuses(); break; //Show Round bonuses
             case 5: RoundIncomePhase(); break; //Force income round to go.
-            case 6: SetUpActionPhase(); break; //Force action phase prerequisites
+            case 6: if (turnController.CurrentRoundNumber > 5) { GameEnd.SetActive(true); EndTurn(); } else { SetUpActionPhase(); } break; //Force action phase prerequisites
             case 7: RoundEndPointsTally(); break; //Force end of round points tallying (for accumulative bonuses).
             case 8: RoundEndCultTally(); roundEndBonusManager.GreyOutRoundEndBonus(turnController.CurrentRoundNumber); ; break; //Force tallying of cult points and allow players to free terraform/build with their bonus
         }
         turnController.ReactToPhaseChange = false; //Once we have reacted to a phase change we dont want to react again so turn the bit off.
     }
 
-    /* Methods underneath are fired when a new game phase starts. */
+    #region Game Phase Preparations
     void SetUpActionPhase()
     {
         localPlayer.AddPointBonus(roundEndBonusManager.GetRoundEndBonus(turnController.CurrentRoundNumber).RoundEndPointBonus, true);
@@ -163,6 +163,10 @@ public class GameController : MonoBehaviour {
             am.RemoveAbility<AbilityTerraform1>();
         }
     }
+
+    #endregion
+
+    #region Action Phase Logic
 
     /* Methods underneath are fired when the player does something. They parse the actions of the player and decide how to react. */
     public void ParseFlags(Tile t)
@@ -282,24 +286,10 @@ public class GameController : MonoBehaviour {
         }
 
         if (global.RoundBonusFlag != RoundBonusManager.RoundBonusType.NOTHING) { ParseFlagsRoundBonusPicking(); }; //Signals end of the round for this player
-
-        if (global.DebugRAISENEIGHBOURS) { DebugRaiseTileNeighbours(t); global.DebugRAISENEIGHBOURS = false; }
     }
+    #endregion
 
-    void DebugRaiseTileNeighbours(Tile t)
-    {
-        foreach (Tile t2 in board.GetNeighbours(t.GetCoordinates().GetXY()))
-        {
-            t2.transform.Translate(new Vector3(0,1,0));
-        }
-    }
-
-    //Retire a player when hes finished his phase
-    public void RetirePlayer()
-    {
-        localPlayer.Retire();
-    }
-
+    #region Actions
     public void CastMagic()
     {
         //If Magic has been invoked
@@ -310,7 +300,7 @@ public class GameController : MonoBehaviour {
             {
                 localPlayer.BurnMagic();
             }
-            if((int)global.MagicCastFlag < 3)//If it's a regular spell
+            if ((int)global.MagicCastFlag < 3)//If it's a regular spell
             {
                 localPlayer.CastSpell(magicController.GetSpell((int)global.MagicCastFlag));
             }
@@ -456,17 +446,12 @@ public class GameController : MonoBehaviour {
         }
     }
 
-    internal void AddSingleIncome(SingleIncome singleIncome)
-    {
-        localPlayer.AddSingleIncome(singleIncome);
-    }
-
     public void TakeFavourTile(int tracktier)
     {
         if (!favourTileAvailable) { return; }
 
         int[] temp = CultController.ParseInt(tracktier); //Parse e.g. 12 into track 1 tier 2
-        int track = temp[0]-1; int tier = temp[1];
+        int track = temp[0] - 1; int tier = temp[1];
 
         FavourBonus wt = wonderController.GetWonderTile(track, tier);
 
@@ -493,13 +478,37 @@ public class GameController : MonoBehaviour {
             networkedUI.DisEnableFavourTiles();
 
             localPlayer.EndTurn();
-        } 
-        
+        }
+
         //If no options are picked for whatever reason return, otherwise send the data to the server and disallow further picking of favours
         else { return; }
 
         localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendPickedFavourData(track, tier);
         favourTileAvailable = false;
+    }
+
+    #endregion
+
+    public void MinePicked(CultIncome ci, int track)
+    {
+        if (CheckPlayerCanAfford(new SingleIncome(0, 0, 1, 0, 0)))
+        {
+            AddCultIncome(ci);
+            localPlayer.localPlayerObject.GetComponent<TakenTurnData>().SendMineTakenData(track);
+            AddSingleIncome(new SingleIncome(0,0,-1,0,0));
+            EndTurn();
+        } //Can afford 1 
+    }
+
+    internal void AddSingleIncome(SingleIncome singleIncome)
+    {
+        localPlayer.AddSingleIncome(singleIncome);
+    }
+
+    //Retire a player when hes finished his phase
+    public void RetirePlayer()
+    {
+        localPlayer.Retire();
     }
 
     public void EndTurnRetire()
@@ -520,6 +529,7 @@ public class GameController : MonoBehaviour {
     {
         return localPlayer.TakingTurn();
     }
+
     internal void EndTurn()
     {
         localPlayer.EndTurn();

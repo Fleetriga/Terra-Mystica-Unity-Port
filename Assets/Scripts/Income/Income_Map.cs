@@ -10,7 +10,7 @@ public class Income_Map{
 
     public Income_Map(int no_buildings)
     {
-        building_income_map = new SingleIncome[no_buildings];
+        building_income_map = new SingleIncome[no_buildings + 1]; //+1 accounts for having 0 buildings of a certain type built
         current_index = 0;
     }
 
@@ -41,7 +41,7 @@ public class Income_Map{
     public int[] GetTotalIncome(int no_built)
     {
         int[] incomes = new int[5];
-        for (int i = 0; i < no_built; i++)
+        for (int i = 0; i < no_built + 1; i++) //+1 includes having 0 buildings of a given type built
         {
             incomes[0] += building_income_map[i].Gold;
             incomes[1] += building_income_map[i].Worker;

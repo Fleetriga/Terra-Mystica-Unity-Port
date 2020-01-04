@@ -16,6 +16,7 @@ public class PlayerNetworked : NetworkBehaviour {
     [SyncVar] [SerializeField] bool isReady; //Ready check before game starts
     [SyncVar] bool isHost;
     [SyncVar] public Faction.FactionType PlayerFaction = Faction.FactionType.NOFACTION;
+    [SyncVar (hook=nameof(InitialisePlayerLobbyEntity))] public string ProfileName;
 
     public bool IsHost { get { return isHost; } }
     public bool IsReady { get { return isReady; } }
@@ -23,10 +24,6 @@ public class PlayerNetworked : NetworkBehaviour {
     // Use this for initialization
     void Start() {
         DontDestroyOnLoad(gameObject);
-
-        //Player has joined. Tell the lobbyManager so that it can spawn a lobby entity for the player.
-        lobbyManager = GameObject.Find("GameLobby").GetComponent<GameLobbyManager>();
-        lobbyManager.PlayerConnected(this, isLocalPlayer, isServer); //Behaviour changes for local players own lobby entity.
 
         PlayerID = playerID++;
 
@@ -43,6 +40,14 @@ public class PlayerNetworked : NetworkBehaviour {
             Cmd_SetHost();
             Cmd_SpawnTurnController();
         }
+        Cmd_SetProfileName(GameObject.Find("IO").GetComponent<ProfileManager>().PlayerProfile.ProfileName);
+    }
+
+    void InitialisePlayerLobbyEntity(string proname)
+    {
+        if (proname == "") { return; }
+        lobbyManager = GameObject.Find("GameLobby").GetComponent<GameLobbyManager>();
+        lobbyManager.PlayerConnected(this, isLocalPlayer, isServer, proname); //Behaviour changes for local players own lobby entity.
     }
 
     void Cmd_AddPlayerStatus()
@@ -85,7 +90,7 @@ public class PlayerNetworked : NetworkBehaviour {
     public string SetFaction(Faction.FactionType i)
     {
         Cmd_SetFaction(i);
-        return Faction.GetFaction(i);
+        return Faction.GetFactionName(i);
     }
     [Command]
     public void Cmd_SetFaction(Faction.FactionType i)
@@ -98,6 +103,12 @@ public class PlayerNetworked : NetworkBehaviour {
     {
         GameObject go = Instantiate(turnControllerPrefab);
         NetworkServer.Spawn(go);
+    }
+
+    [Command]
+    void Cmd_SetProfileName(string proname)
+    {
+        ProfileName = proname;
     }
 
     [Command]

@@ -48,9 +48,7 @@ public class PlayerSheetsInterface : MonoBehaviour
     public void SetUp(int playerID)
     {
         if (sheetsGroup == null) { return; }
-        sheetsGroup[playerID].RegularUpdate(players[playerID].GetComponent<PlayerStatistics>());
-        sheetsGroup[playerID].TierMagicUpdate(players[playerID].GetComponent<PlayerStatistics>());
-        sheetsGroup[playerID].PointsUpdate(players[playerID].GetComponent<PlayerStatistics>());
+        sheetsGroup[playerID].SetUp(players[playerID].GetComponent<PlayerStatistics>());
     }
 
     public void RegularUpdate(int playerID)

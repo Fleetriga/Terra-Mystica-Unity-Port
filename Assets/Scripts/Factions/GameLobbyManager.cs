@@ -35,12 +35,12 @@ public class GameLobbyManager : MonoBehaviour
         localPlayer.Cmd_SetPlayerReadyUnready();
     }
 
-    public void PlayerConnected(PlayerNetworked connectedPlayer, bool local, bool host)
+    public void PlayerConnected(PlayerNetworked connectedPlayer, bool local, bool host, string playername)
     {
         //spawn a lobby entity corresponding to new player
         GameObject go = Instantiate(PlayerLobbyEntityPrefab, transform.GetChild(0).GetChild(1));
         //Set entities PlayerListener to listen to the player who just joined.
-        go.GetComponent<LobbyEntityListener>().SetCorrespondingPlayer(connectedPlayer);
+        go.GetComponent<LobbyEntityListener>().SetCorrespondingPlayer(connectedPlayer, playername);
 
         //If it's the local player it needs to be connected to PlayerNetworked to tell them of faction changes.
         if (local)
