@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -55,6 +56,27 @@ public class UI_Updater : MonoBehaviour {
         moneyIncomeUI.text = incomes[0].ToString();
         workerIncomeUI.text = incomes[1].ToString();
         priestIncomeUI.text = incomes[2].ToString();
+    }
+    public void ShowPerspectiveResources(int[] perspectiveResources, int[] actualResources)
+    {
+        moneyCountUI.text = $"<color=#{GetPerspectiveColourHex(perspectiveResources[0], actualResources[0])}>{perspectiveResources[0]}</color>";
+        workerCountUI.text = $"<color=#{GetPerspectiveColourHex(perspectiveResources[1], actualResources[1])}>{perspectiveResources[1]}</color>";
+        priestCountUI.text = $"<color=#{GetPerspectiveColourHex(perspectiveResources[2], actualResources[2])}>{perspectiveResources[2]}</color>";
+        shovelCountUI.text = $"<color=#{GetPerspectiveColourHex(perspectiveResources[3], actualResources[3])}>{perspectiveResources[3]}</color>";
+    }
+
+    public void ShowPerspectiveIncomes(int[] perspectiveIncomes, int[] actualIncomes)
+    {
+        moneyIncomeUI.text = $"<color=#{GetPerspectiveColourHex(perspectiveIncomes[0], actualIncomes[0])}>{perspectiveIncomes[0]}</color>";
+        workerIncomeUI.text = $"<color=#{GetPerspectiveColourHex(perspectiveIncomes[1], actualIncomes[1])}>{perspectiveIncomes[1]}</color>";
+        priestIncomeUI.text = $"<color=#{GetPerspectiveColourHex(perspectiveIncomes[2], actualIncomes[2])}>{perspectiveIncomes[2]}</color>";
+    }
+
+    string GetPerspectiveColourHex(int perspective, int actual)
+    {
+        if (perspective > actual) { return "367338"; }
+        if (perspective == actual) { return ColorUtility.ToHtmlStringRGB(Color.black); }
+        return "a32626";
     }
 
     public void UpdateMagicTiers(int[] tiers)

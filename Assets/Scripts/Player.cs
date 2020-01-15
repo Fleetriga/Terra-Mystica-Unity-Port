@@ -11,10 +11,10 @@ public class Player : MonoBehaviour {
     Music music;
 
     //Player resources
-    int shovel_count;
+    int shovelCount;
     Magic tierMagic;
     int shipping;
-    int current_upgrade_terraform;
+    int currentTerraformLevel;
     CultData cd;
 
     //Round pick up bonuses
@@ -24,9 +24,9 @@ public class Player : MonoBehaviour {
     public int playerID;
 
     //Player income
-    int money_income;
-    int worker_income;
-    int priest_income;
+    int goldIncome;
+    int workerIncome;
+    int priestIncome;
     int magic_income;
 
     //Any bonuses to incomes that arent from buildings
@@ -82,7 +82,7 @@ public class Player : MonoBehaviour {
 
         //Shipping & terraform upgrade levels
         shipping = faction.GetDefaultShipping();
-        current_upgrade_terraform = 0;
+        currentTerraformLevel = 0;
 
         //Starting list of "built upon" coordinates is empty
         buildingLocs = new List<Coordinate>();
@@ -93,14 +93,14 @@ public class Player : MonoBehaviour {
 
         //Setup UI to start with
         ui = GameObject.Find("UI").GetComponent<UI_Updater>();
-        ui.UpdatePlayerBuildingCosts(faction.Get_cost_build_dwelling(), faction.Get_cost_build_TP(), faction.Get_cost_build_temple(), faction.Get_cost_build_sanctuary(), faction.Get_cost_build_stronghold());
+        ui.UpdatePlayerBuildingCosts(faction.CostBuildDwelling(), faction.CostBuildTP(), faction.CostBuildTemple(), faction.CostBuildSanctuary(), faction.CostBuildStronghold());
         ui.UpdatePlayerCultText(cd);
 
         //Starting resources and income and update UI resources/income
         publicPlayerAttributes.CmdSetGold(faction.Starting_gold);
         publicPlayerAttributes.CmdSetWorkers(faction.Starting_worker);
         publicPlayerAttributes.CmdSetPriests(faction.Starting_priest);
-        shovel_count = faction.Starting_shovels;
+        shovelCount = faction.Starting_shovels;
 
         CalculateIncome();
 
@@ -115,6 +115,159 @@ public class Player : MonoBehaviour {
         music = GameObject.Find("Music").GetComponent<Music>();
         music.SetUp(Faction.GetFactionName(p_faction));
 	}
+
+    public int[] GetResources()
+    {
+        return new int[]{publicPlayerAttributes.PlayerGold, publicPlayerAttributes.PlayerWorkers, publicPlayerAttributes.PlayerPriests, shovelCount};
+    }
+    public int[] GetIncomes()
+    {
+        return new int[] { goldIncome, workerIncome, priestIncome };
+    }
+
+    #region Perspectives
+    public int[] GetPerspectiveResourceAfterTerraform(int distance)
+    {
+        if (shovelCount >= distance)
+        {   //If there are more shovels we can just work out remaining shovels
+            shovelCount = (shovelCount - distance);
+            distance = 0;
+        }
+        else
+        {   //Otherwise we need to work out worker cost after using remaining shovels
+            distance -= shovelCount;
+            shovelCount = 0;
+        }
+
+        int[] temp = GetResources(); //Form array of of all perspective resources
+        temp[1] = publicPlayerAttributes.PlayerWorkers - distance * faction.GetTerraformCost(currentTerraformLevel).Worker;
+
+        return temp;
+    }
+
+    public int[] GetPerspectiveResourceAfterBuilding(Building.Building_Type building)
+    {
+        SingleIncome cost = new SingleIncome();
+        switch (building)
+        {
+            case Building.Building_Type.Dwelling:
+                cost = new SingleIncome(faction.CostBuildDwelling()[0],
+                                        faction.CostBuildDwelling()[1],
+                                        //faction.CostBuildDwelling()[3]
+                                        0, 0, 0);
+                break;
+            case Building.Building_Type.Trading_Post:
+                cost = new SingleIncome(faction.CostBuildTP()[0], 
+                                        faction.CostBuildTP()[1],
+                                        //faction.CostBuildTP()[3]
+                                        0, 0, 0);
+                break;
+            case Building.Building_Type.Stronghold:
+                cost = new SingleIncome(faction.CostBuildStronghold()[0],
+                                        faction.CostBuildStronghold()[1],
+                                        //faction.CostBuildStronghold()[3]
+                                        0, 0, 0);
+                break;
+            case Building.Building_Type.Temple:
+                cost = new SingleIncome(faction.CostBuildTemple()[0],
+                                        faction.CostBuildTemple()[1],
+                                       //faction.CostBuildTemple()[3],
+                                       0, 0, 0);
+                break;
+            case Building.Building_Type.Sanctuary:
+                cost = new SingleIncome(faction.CostBuildSanctuary()[0],
+                                        faction.CostBuildSanctuary()[1],
+                                        //faction.CostBuildSanctuary()[3], 
+                                        0, 0, 0);
+                break;
+        }
+
+        int[] temp = GetResources(); //Form array of of all perspective resources
+        temp[0] = publicPlayerAttributes.PlayerGold - cost.Gold;
+        temp[1] = publicPlayerAttributes.PlayerWorkers - cost.Worker;
+        temp[2] = publicPlayerAttributes.PlayerPriests - cost.Priest;
+
+        return temp;
+    }
+
+    public int[] GetPerspectiveIncomeAfterBuilding(Building.Building_Type building)
+    {
+        SingleIncome addedIncome = new SingleIncome();
+        switch (building)
+        {
+            case Building.Building_Type.Dwelling:
+                addedIncome = new SingleIncome(faction.GetDwellingIncome().GetIncome(Get_Remaining_Index(building)).Gold,
+                        faction.GetDwellingIncome().GetIncome(Get_Remaining_Index(building)).Worker,
+                        faction.GetDwellingIncome().GetIncome(Get_Remaining_Index(building)).Priest,
+                        faction.GetDwellingIncome().GetIncome(Get_Remaining_Index(building)).Magic,
+                        faction.GetDwellingIncome().GetIncome(Get_Remaining_Index(building)).Shovel);
+                break;
+            case Building.Building_Type.Trading_Post:
+                addedIncome = new SingleIncome(faction.GetTpIncome().GetIncome(Get_Remaining_Index(building)).Gold,
+                        faction.GetTpIncome().GetIncome(Get_Remaining_Index(building)).Worker,
+                        faction.GetTpIncome().GetIncome(Get_Remaining_Index(building)).Priest,
+                        faction.GetTpIncome().GetIncome(Get_Remaining_Index(building)).Magic,
+                        faction.GetTpIncome().GetIncome(Get_Remaining_Index(building)).Shovel);
+
+                //- the dwelling thats removed.
+                addedIncome.Gold -= faction.GetDwellingIncome().GetIncome(Get_Remaining_Index(building)-1).Gold;
+                addedIncome.Worker -= faction.GetDwellingIncome().GetIncome(Get_Remaining_Index(building) - 1).Worker;
+                addedIncome.Priest -= faction.GetDwellingIncome().GetIncome(Get_Remaining_Index(building) - 1).Priest;
+                addedIncome.Magic -= faction.GetDwellingIncome().GetIncome(Get_Remaining_Index(building) - 1).Magic;
+
+                break;
+            case Building.Building_Type.Stronghold:
+                addedIncome = new SingleIncome(faction.GetFortressIncome().GetIncome(Get_Remaining_Index(building)).Gold,
+                        faction.GetFortressIncome().GetIncome(Get_Remaining_Index(building)).Worker,
+                        faction.GetFortressIncome().GetIncome(Get_Remaining_Index(building)).Priest,
+                        faction.GetFortressIncome().GetIncome(Get_Remaining_Index(building)).Magic,
+                        faction.GetFortressIncome().GetIncome(Get_Remaining_Index(building)).Shovel);
+
+                //- the TP thats removed.
+                addedIncome.Gold -= faction.GetTpIncome().GetIncome(Get_Remaining_Index(building) - 1).Gold;
+                addedIncome.Worker -= faction.GetTpIncome().GetIncome(Get_Remaining_Index(building) - 1).Worker;
+                addedIncome.Priest -= faction.GetTpIncome().GetIncome(Get_Remaining_Index(building) - 1).Priest;
+                addedIncome.Magic -= faction.GetTpIncome().GetIncome(Get_Remaining_Index(building) - 1).Magic;
+                break;
+            case Building.Building_Type.Temple:
+                addedIncome = new SingleIncome(faction.GetTempleIncome().GetIncome(Get_Remaining_Index(building)).Gold,
+                        faction.GetTempleIncome().GetIncome(Get_Remaining_Index(building)).Worker,
+                        faction.GetTempleIncome().GetIncome(Get_Remaining_Index(building)).Priest,
+                        faction.GetTempleIncome().GetIncome(Get_Remaining_Index(building)).Magic,
+                        faction.GetTempleIncome().GetIncome(Get_Remaining_Index(building)).Shovel);
+
+                //- the TP thats removed.
+                addedIncome.Gold -= faction.GetTpIncome().GetIncome(Get_Remaining_Index(building) - 1).Gold;
+                addedIncome.Worker -= faction.GetTpIncome().GetIncome(Get_Remaining_Index(building) - 1).Worker;
+                addedIncome.Priest -= faction.GetTpIncome().GetIncome(Get_Remaining_Index(building) - 1).Priest;
+                addedIncome.Magic -= faction.GetTpIncome().GetIncome(Get_Remaining_Index(building) - 1).Magic;
+                break;
+            case Building.Building_Type.Sanctuary:
+                addedIncome = new SingleIncome(faction.GetSanctuaryIncome().GetIncome(Get_Remaining_Index(building)).Gold,
+                        faction.GetSanctuaryIncome().GetIncome(Get_Remaining_Index(building)).Worker,
+                        faction.GetSanctuaryIncome().GetIncome(Get_Remaining_Index(building)).Priest,
+                        faction.GetSanctuaryIncome().GetIncome(Get_Remaining_Index(building)).Magic,
+                        faction.GetSanctuaryIncome().GetIncome(Get_Remaining_Index(building)).Shovel);
+
+                //- the temple thats removed.
+                addedIncome.Gold -= faction.GetTempleIncome().GetIncome(Get_Remaining_Index(building) - 1).Gold;
+                addedIncome.Worker -= faction.GetTempleIncome().GetIncome(Get_Remaining_Index(building) - 1).Worker;
+                addedIncome.Priest -= faction.GetTempleIncome().GetIncome(Get_Remaining_Index(building) - 1).Priest;
+                addedIncome.Magic -= faction.GetTempleIncome().GetIncome(Get_Remaining_Index(building) - 1).Magic;
+                break;
+        }
+
+        int[] temp = GetIncomes(); //Form array of of all perspective resources
+        temp[0] = goldIncome + addedIncome.Gold;
+        temp[1] = workerIncome + addedIncome.Worker;
+        temp[2] = priestIncome + addedIncome.Priest;
+
+        //For now magic income isnt shown
+
+        return temp;
+    }
+
+    #endregion
 
     internal bool CheckPlayerCanAfford(SingleIncome price)
     {
@@ -165,9 +318,9 @@ public class Player : MonoBehaviour {
     //Adds one income to another.
     void AddTo_Income(int[] income)
     {
-        money_income += income[0];
-        worker_income += income[1];
-        priest_income += income[2];
+        goldIncome += income[0];
+        workerIncome += income[1];
+        priestIncome += income[2];
         magic_income += income[3];
     }
 
@@ -190,15 +343,15 @@ public class Player : MonoBehaviour {
         publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers += incomes[1]);
         publicPlayerAttributes.CmdSetPriests(publicPlayerAttributes.PlayerPriests += incomes[2]);
         tierMagic.AddMagic(incomes[3]); UpdateMagicPublicVariables();
-        shovel_count += incomes[4];
+        shovelCount += incomes[4];
         UpdateResourceText();
     }
 
     void ResetIncomes()
     {
-        money_income = 0;
-        worker_income = 0;
-        priest_income = 0;
+        goldIncome = 0;
+        workerIncome = 0;
+        priestIncome = 0;
         magic_income = 0;
     }
 
@@ -209,15 +362,15 @@ public class Player : MonoBehaviour {
         switch (bt)
         {
             case Building.Building_Type.Dwelling:
-                temp = faction.Get_cost_build_dwelling(); break;
+                temp = faction.CostBuildDwelling(); break;
             case Building.Building_Type.Trading_Post:
-                temp = faction.Get_cost_build_TP(); break;
+                temp = faction.CostBuildTP(); break;
             case Building.Building_Type.Stronghold:
-                temp = faction.Get_cost_build_stronghold(); break; 
+                temp = faction.CostBuildStronghold(); break; 
             case Building.Building_Type.Sanctuary:
-                temp = faction.Get_cost_build_temple(); break; 
+                temp = faction.CostBuildTemple(); break; 
             case Building.Building_Type.Temple:
-                temp = faction.Get_cost_build_sanctuary(); break; 
+                temp = faction.CostBuildSanctuary(); break; 
         }
         if (publicPlayerAttributes.PlayerGold - temp[0] >= 0 && publicPlayerAttributes.PlayerWorkers - temp[1] >= 0) { return true; }
         return false;
@@ -233,7 +386,7 @@ public class Player : MonoBehaviour {
         int distance = Terrain.GetDistance(target, tile);
 
         //If player has either enough shovels or has enough resources to buy shovels
-        if (distance <= shovel_count || distance-shovel_count * faction.Get_Cost_Terraform(current_upgrade_terraform).Worker <= publicPlayerAttributes.PlayerWorkers)
+        if (distance <= shovelCount || distance-shovelCount * faction.GetTerraformCost(currentTerraformLevel).Worker <= publicPlayerAttributes.PlayerWorkers)
         {
             return true;
         }
@@ -249,20 +402,23 @@ public class Player : MonoBehaviour {
     {
         int distance = Terrain.GetDistance(target, tile);
 
-        for (int i = 0; i < distance; i++)
-        {
-            if (shovel_count > 0)
-            {
-                shovel_count--;
-            }
-            else //If we still need to terraform, convert workers into shovels and then use them
-            {
-                AddSingleIncome(faction.Get_Cost_Terraform(current_upgrade_terraform).Reciprocal());
-                CheckPoints(PointBonus.Action_Type.Terraform);
-            } 
+        for (int i = 0; i < distance; i++) { CheckPoints(PointBonus.Action_Type.Terraform); }
+
+        if (shovelCount >= distance)
+        {   //If there are more shovels we can just work out remaining shovels
+            shovelCount = (shovelCount - distance);
+            distance = 0;
+        }
+        else
+        {   //Otherwise we need to work out worker cost after using remaining shovels
+            distance -= shovelCount;
+            shovelCount = 0;
         }
 
+        AddSingleIncome(faction.GetTerraformCost(currentTerraformLevel).Multiply(distance*-1)); //Shovels aren't included so are reduced above
+
         ui.UpdatePoints(publicPlayerAttributes.PlayerPoints);
+        UpdateResourceText();
     }
 
     public void Build(Building.Building_Type bt)
@@ -270,34 +426,34 @@ public class Player : MonoBehaviour {
         switch (bt)
         {
             case Building.Building_Type.Dwelling:
-                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.Get_cost_build_dwelling()[0]);
-                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.Get_cost_build_dwelling()[1]);
+                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.CostBuildDwelling()[0]);
+                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.CostBuildDwelling()[1]);
                 current_dwelling++;
                 break;
             case Building.Building_Type.Trading_Post:
                 //First calculate resources and all that
-                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.Get_cost_build_TP()[0]);
-                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.Get_cost_build_TP()[1]);
+                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.CostBuildTP()[0]);
+                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.CostBuildTP()[1]);
                 //Then update UI to display remaining buildings of the type that increased. So when a player builds a TP they regain a dwelling.
                 ui.DisplayRemaining(Building.Building_Type.Dwelling, Get_Remaining_Index(Building.Building_Type.Dwelling));
                 current_tp++; current_dwelling--;
                 break;
             case Building.Building_Type.Stronghold:
-                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.Get_cost_build_stronghold()[0]);
-                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.Get_cost_build_stronghold()[1]);
+                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.CostBuildStronghold()[0]);
+                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.CostBuildStronghold()[1]);
                 ui.DisplayRemaining(Building.Building_Type.Trading_Post, Get_Remaining_Index(Building.Building_Type.Trading_Post));
                 current_fortress++; current_tp--;
                 CheckPoints(PointBonus.Action_Type.BuildT3); //Special point bonus
                 break;
             case Building.Building_Type.Temple:
-                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.Get_cost_build_temple()[0]);
-                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.Get_cost_build_temple()[1]);
+                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.CostBuildTemple()[0]);
+                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.CostBuildTemple()[1]);
                 ui.DisplayRemaining(Building.Building_Type.Trading_Post, Get_Remaining_Index(Building.Building_Type.Trading_Post));
                 current_temple++; current_tp--;
                 break;
             case Building.Building_Type.Sanctuary:
-                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.Get_cost_build_sanctuary()[0]);
-                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.Get_cost_build_sanctuary()[1]);
+                publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold - faction.CostBuildSanctuary()[0]);
+                publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers - faction.CostBuildSanctuary()[1]);
                 ui.DisplayRemaining(Building.Building_Type.Temple, Get_Remaining_Index(Building.Building_Type.Temple));
                 current_sanctuary++; current_temple--;
                 CheckPoints(PointBonus.Action_Type.BuildT3); //Special point bonus
@@ -308,25 +464,7 @@ public class Player : MonoBehaviour {
 
         //Finally update UI for building which is losing one of itself
         ui.DisplayRemaining(bt, Get_Remaining_Index(bt));
-    }
 
-    //Gives you the remaning number of buildings of given type in the players building pool
-    int Get_Remaining_Index(Building.Building_Type bt)
-    {
-        switch (bt)
-        {
-            case Building.Building_Type.Dwelling: return faction.max_dwelling - current_dwelling;
-            case Building.Building_Type.Trading_Post: return faction.max_tp - current_tp;
-            case Building.Building_Type.Stronghold: return faction.max_fortress - current_fortress;
-            case Building.Building_Type.Temple: return faction.max_temple - current_temple;
-            case Building.Building_Type.Sanctuary: return faction.max_sanctuary - current_sanctuary;
-        }
-        return 0;
-    }
-
-    internal void AddSinglePointValue(int points)
-    {
-        publicPlayerAttributes.CmdSetPoints(publicPlayerAttributes.PlayerPoints += points);
         UpdateResourceText();
     }
 
@@ -356,7 +494,33 @@ public class Player : MonoBehaviour {
                 ui.DisplayRemaining(Building.Building_Type.Temple, Get_Remaining_Index(Building.Building_Type.Temple));
                 break;
         }
+        CheckPoints(PointBonus.MapBuildingToAction(bt)); //Check if we gained any points#
+        ui.UpdatePoints(publicPlayerAttributes.PlayerPoints);
+
+        //Finally update UI for building which is losing one of itself
         ui.DisplayRemaining(bt, Get_Remaining_Index(bt));
+
+        UpdateResourceText();
+    }
+
+    //Gives you the remaning number of buildings of given type in the players building pool
+    int Get_Remaining_Index(Building.Building_Type bt)
+    {
+        switch (bt)
+        {
+            case Building.Building_Type.Dwelling: return faction.max_dwelling - current_dwelling;
+            case Building.Building_Type.Trading_Post: return faction.max_tp - current_tp;
+            case Building.Building_Type.Stronghold: return faction.max_fortress - current_fortress;
+            case Building.Building_Type.Temple: return faction.max_temple - current_temple;
+            case Building.Building_Type.Sanctuary: return faction.max_sanctuary - current_sanctuary;
+        }
+        return 0;
+    }
+
+    internal void AddSinglePointValue(int points)
+    {
+        publicPlayerAttributes.CmdSetPoints(publicPlayerAttributes.PlayerPoints += points);
+        UpdateResourceText();
     }
 
     public void AddBuiltCoordinate(Tile t)
@@ -395,10 +559,10 @@ public class Player : MonoBehaviour {
             && publicPlayerAttributes.PlayerWorkers >= cost.Worker 
             && publicPlayerAttributes.PlayerPriests >= cost.Priest 
             && tierMagic.GetTiers()[2] >= cost.Magic 
-            && !faction.Max_Upgrade_Terraform(current_upgrade_terraform))//and its not at max shipping
+            && !faction.Max_Upgrade_Terraform(currentTerraformLevel))//and its not at max shipping
         {
             AddSingleIncome(cost.Reciprocal());
-            current_upgrade_terraform++;
+            currentTerraformLevel++;
             return true;
         }
         return false;
@@ -406,7 +570,7 @@ public class Player : MonoBehaviour {
 
     public int Current_Upgrade_Terraform()
     {
-        return current_upgrade_terraform;
+        return currentTerraformLevel;
     }
 
     //Spells
@@ -451,7 +615,7 @@ public class Player : MonoBehaviour {
     }
     public void UpdateResourceText()
     {
-        ui.UpdateResourceText(new int[] { publicPlayerAttributes.PlayerGold, publicPlayerAttributes.PlayerWorkers, publicPlayerAttributes.PlayerPriests, shovel_count }, new int[] { money_income, worker_income, priest_income});
+        ui.UpdateResourceText(new int[] { publicPlayerAttributes.PlayerGold, publicPlayerAttributes.PlayerWorkers, publicPlayerAttributes.PlayerPriests, shovelCount }, new int[] { goldIncome, workerIncome, priestIncome});
         ui.UpdateMagicTiers(tierMagic.GetTiers());
         ui.UpdatePoints(publicPlayerAttributes.PlayerPoints);
     }
@@ -495,7 +659,7 @@ public class Player : MonoBehaviour {
     //End Turn and round
     public void EndTurn()
     {
-        CalculateIncome();
+        CalculateIncome(); //Failsafe
         UpdateResourceText();
 
         //Tell the network that it's over
@@ -507,6 +671,9 @@ public class Player : MonoBehaviour {
     }
     public void Retire()
     {
+        CalculateIncome(); //Failsafe
+        UpdateResourceText();
+
         localPlayerObject.GetComponent<PlayerStatus>().Cmd_SetPlayerStatus(PlayerStatus.PlayerStatusEnum.Retiring);
     }
 
@@ -516,9 +683,9 @@ public class Player : MonoBehaviour {
         //First we calculate it, just in case it changed
         CalculateIncome();
         //Then we add increase our counts by the income amounts
-        publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold += money_income);
-        publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers += worker_income);
-        publicPlayerAttributes.CmdSetPriests(publicPlayerAttributes.PlayerPriests += priest_income);
+        publicPlayerAttributes.CmdSetGold(publicPlayerAttributes.PlayerGold += goldIncome);
+        publicPlayerAttributes.CmdSetWorkers(publicPlayerAttributes.PlayerWorkers += workerIncome);
+        publicPlayerAttributes.CmdSetPriests(publicPlayerAttributes.PlayerPriests += priestIncome);
         tierMagic.AddMagic(magic_income); UpdateMagicPublicVariables();
 
         //Then update the texts

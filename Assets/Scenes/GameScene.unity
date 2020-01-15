@@ -355,6 +355,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 397056449}
+        m_MethodName: TileHoverOver
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1873998275}
+          m_ObjectArgumentAssemblyTypeName: Tile, Assembly-CSharp
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &3626185
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5467,6 +5478,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 397056449}
+        m_MethodName: TileHoverOver
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1873998275}
+          m_ObjectArgumentAssemblyTypeName: Tile, Assembly-CSharp
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &191864505
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6894,7 +6916,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
@@ -36993,6 +37015,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 397056449}
+        m_MethodName: TileHoverOver
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1873998275}
+          m_ObjectArgumentAssemblyTypeName: Tile, Assembly-CSharp
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1556144533
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -42583,6 +42616,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 397056449}
+        m_MethodName: TileHoverOver
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1873998275}
+          m_ObjectArgumentAssemblyTypeName: Tile, Assembly-CSharp
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1790789672
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -43930,6 +43974,17 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 397056449}
+        m_MethodName: TileHoverOver
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1873998275}
+          m_ObjectArgumentAssemblyTypeName: Tile, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 

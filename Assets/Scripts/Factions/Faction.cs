@@ -62,7 +62,7 @@ public abstract class Faction {
     abstract public void SetUp(); //To be inherited
 
     //upgrade terraforming and get cost of terraforming
-    public SingleIncome Get_Cost_Terraform(int upgrade_terraform)
+    public SingleIncome GetTerraformCost(int upgrade_terraform)
     {
         return Cost_Terraform.GetTotalIncomeAsSingleIncome(upgrade_terraform);
     }
@@ -82,23 +82,23 @@ public abstract class Faction {
     }
 
     //Building Cost
-    public int[] Get_cost_build_dwelling()
+    public int[] CostBuildDwelling()
     {
         return cost_build_dwelling;
     }
-    public int[] Get_cost_build_TP()
+    public int[] CostBuildTP()
     {
         return cost_build_TP;
     }
-    public int[] Get_cost_build_stronghold()
+    public int[] CostBuildStronghold()
     {
         return cost_build_stronghold;
     }
-    public int[] Get_cost_build_temple()
+    public int[] CostBuildTemple()
     {
         return cost_build_temple;
     }
-    public int[] Get_cost_build_sanctuary()
+    public int[] CostBuildSanctuary()
     {
         return cost_build_sanctuary;
     }

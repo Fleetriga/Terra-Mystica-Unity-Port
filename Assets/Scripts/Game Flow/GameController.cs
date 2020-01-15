@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using System;
+using System.Linq;
 
 public class GameController : MonoBehaviour {
     MagicController magicController;
     WonderController wonderController;
     TownFoundingBonusManager townFoundManager;
     Networked_UI_Updater networkedUI;
+    UI_Updater UI;
     CultController cultController;
     TracksInterface progressTrackManager;
 
@@ -40,6 +42,7 @@ public class GameController : MonoBehaviour {
         global = GetComponent<GlobalFlags>();
         networkedUI = ui_holder.GetComponent<Networked_UI_Updater>();
         progressTrackManager = ui_holder.GetComponent<TracksInterface>();
+        UI = ui_holder.GetComponent<UI_Updater>();
         townFoundManager = GetComponent<TownFoundingBonusManager>();
         wonderController = GetComponent<WonderController>();
         roundEndBonusManager = GetComponent<RoundEndBonusManager>();
@@ -59,6 +62,29 @@ public class GameController : MonoBehaviour {
         roundEndBonusManager.SetUp();
         SetUpTracks();
         global.Set_Up();
+    }
+
+    //Dynamically changes income/resources to show the effects of building and terraforming
+    public void TileHoverOver(Tile tile)
+    {
+        if (global.Terraform_Flag != Terrain.TerrainType.NOTHING)
+        {
+            UI.ShowPerspectiveResources(localPlayer.GetPerspectiveResourceAfterTerraform(Terrain.GetDistance(global.Terraform_Flag, tile.terrain.GetValue())), localPlayer.GetResources());
+        }
+        if (global.BuildFlag != Building.Building_Type.NOTHING )
+        {
+            UI.ShowPerspectiveIncomes(localPlayer.GetPerspectiveIncomeAfterBuilding(global.BuildFlag), localPlayer.GetIncomes());
+
+            if(!(new[] { 0, 1, 2, 3, 8 }.Any(phase => phase == turnController.CurrentPhase) || global.FreeBuildFlag))
+            {
+                UI.ShowPerspectiveResources(localPlayer.GetPerspectiveResourceAfterBuilding(global.BuildFlag), localPlayer.GetResources());
+            }
+        }
+    }
+
+    public void SetFreeBuildFlag()
+    {
+        global.FreeBuildFlag = true;
     }
 
     //Checks if player can afford a certain price before going through with an action
@@ -275,9 +301,13 @@ public class GameController : MonoBehaviour {
             endTurnOrBuild = false; //If it was set, it isn't now.
             global.ResetFlags();
         }
-        //If the terrain flag is(isn't not) set AND there is no building on this tile AND and this is not a river tile AND player validation passes(resources OK)
+        //If the terrain flag is(isn't not) set 
+        //AND there is no building on this tile 
+        //AND and this is not a river tile 
+        //AND player validation passes(resources OK)
         if ((!Terrain.TerrainEquals(global.Terraform_Flag, Terrain.TerrainType.NOTHING)) &&
             (!t.HasBuilding()) && (!t.IsRiverTile()) &&
+            localPlayer.CheckCanTerraform(global.Terraform_Flag, t.GetTerrainType()) && 
             localPlayer.CheckCanTerraform(global.Terraform_Flag, t.GetTerrainType()))
         {
             Terraform(global.Terraform_Flag, t);
@@ -385,7 +415,6 @@ public class GameController : MonoBehaviour {
             networkedUI.DisEnableTownTiles();
             endTurn = false;
         }
-
         return endTurn;
     }
 

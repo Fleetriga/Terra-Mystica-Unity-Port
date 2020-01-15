@@ -49,6 +49,11 @@ public class Tile : MonoBehaviour {
         gameController.ParseFlags(this);
     }
 
+    void OnMouseOver()
+    {
+        gameController.TileHoverOver(this);
+    }
+
     public void Terraform(Terrain.TerrainType t_type)
     { 
         switch (t_type) //Switch until all models are created
