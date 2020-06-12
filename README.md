@@ -54,6 +54,9 @@ Gameplay:
       + Give players immediate resource bonus
       + Chosen first in counter player order, then chosen when a player retires for the round
       + A Round Start Bonus cannot be chosen by two players
+  - Shipping
+      + Players can build over rivers with a high enough shipping value
+      + One shipping allows the player to build over one river tile 
   - Town Building
       + Buildings built adjacent pool their building points
       + When a cluster of buildings reaches 7 points and contains at least 4 buildings a town is formed
